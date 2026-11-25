@@ -88,6 +88,14 @@ shop.heimfeld.life {
 }
 ```
 
+### Troubleshooting Ersteinrichtung/Neuaufsetzen
+
+Siehe [goa_webapp_shop_admin's README](https://github.com/JulianVor/goa_webapp_shop_admin#troubleshooting-ersteinrichtungneuaufsetzen)
+für die beim ersten Deploy aufgetretenen Stolperfallen beim Anlegen von
+User/Datenbank auf dem gemeinsamen Postgres-Container (echten Superuser/DB-Namen
+ermitteln statt raten, `CREATE USER`/`CREATE DATABASE` nie im selben `-c`) - gilt hier
+genauso für `SHOP_DB_USER`/`SHOP_DB_NAME`.
+
 ## Offene Punkte / nächste Schritte
 
 - **Zahlung**: Checkout ist bis zum Warenkorb voll funktionsfähig; die eigentliche
