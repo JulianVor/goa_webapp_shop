@@ -24,7 +24,15 @@ public record MedusaCart(
             String thumbnail,
             String variant_id,
             int quantity,
-            BigDecimal unit_price,
-            BigDecimal subtotal) {
+            BigDecimal unit_price) {
+
+        /**
+         * Medusa's line item "subtotal" is a computed field that's only included in the
+         * response if explicitly requested via a "fields" query param - simpler to just
+         * compute it here from unit_price * quantity, which is always present.
+         */
+        public BigDecimal subtotal() {
+            return unit_price == null ? BigDecimal.ZERO : unit_price.multiply(BigDecimal.valueOf(quantity));
+        }
     }
 }
