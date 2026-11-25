@@ -3,8 +3,8 @@ services:
     build: .
     restart: unless-stopped
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${SHOP_DB_HOST:-db}:5432/${SHOP_DB_NAME:-goa_webapp_shop}
-      SPRING_DATASOURCE_USERNAME: ${SHOP_DB_USER:-shop}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${SHOP_DB_HOST:-db}:5432/${SHOP_DB_NAME:-life_webapp_shop}
+      SPRING_DATASOURCE_USERNAME: ${SHOP_DB_USER:-life_webapp_shop}
       SPRING_DATASOURCE_PASSWORD: ${SHOP_DB_PASSWORD:-change-me}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-change-me}
