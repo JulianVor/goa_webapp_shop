@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title th:text="${pageTitle} ?: 'Fanshop – Grumbrechtstraßen Open Air'">Fanshop</title>
     <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <!-- Synced at deploy time from goa_webapp's currently active edition (see
+         scripts/sync-styles.sh) - sets the actual colors/fonts/background style.css's
+         own :root only has fallback values for. Missing until the first sync has run. -->
+    <link rel="stylesheet" th:href="@{/css/edition.css}"/>
     <link rel="stylesheet" th:href="@{/css/shop.css}"/>
     <!-- Same combined Google Fonts request goa_webapp uses (see its fragments/head.html) -
          loaded unconditionally since this app has no per-edition font choice to branch on. -->

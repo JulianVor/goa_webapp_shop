@@ -32,17 +32,31 @@ hier deckt nur ab, was Medusa nicht mitbringt:
 ## Styles von goa_webapp
 
 `static/css/style.css` und `static/fonts/Brugty.ttf` sind **synchronisierte Kopien** aus
-goa_webapp (nicht live verlinkt, siehe Konzept-Diskussion "Option B"). Neu ziehen mit:
+goa_webapp (nicht live verlinkt, siehe Konzept-Diskussion "Option B"). `style.css`
+definiert dabei nur, *wie* eine Reihe CSS-Variablen (`--color-*`, `--font-*`,
+`--box-radius`, `--pill-radius`, `--bg-image`) benutzt werden - die tatsächlichen *Werte*
+(welche Farben, welches der beiden Font-Paare Brugty/Poppins vs. Bebas Neue/Oswald,
+welches Hintergrundbild) sind bei goa_webapp selbst **pro aktueller Edition** aus der
+Datenbank und werden dort serverseitig in `fragments/head.html` injiziert - die hat dieser
+Shop bewusst nicht (keine DB-Kopplung an goa_webapp). Stattdessen zieht
+`scripts/sync-styles.sh` sich diesen gerenderten `<style>`-Block direkt von der laufenden
+Startseite und friert ihn in `static/css/edition.css` ein (inkl. des Hintergrundbilds,
+falls als server-relativer Pfad referenziert):
 
 ```bash
 ./scripts/sync-styles.sh                                   # von https://heimfeld.life
 SOURCE=file:///pfad/zu/goa_webapp/src/main/resources/static ./scripts/sync-styles.sh  # lokal
 ```
 
-Danach `git diff` prüfen und committen. `shop.css` enthält nur die shop-eigenen
-Komponenten (Produktraster, Warenkorb, Rechtstexte) und nutzt die CSS-Variablen aus
-`style.css` (`--color-*`, `--font-*`, `--box-radius`, `--pill-radius`) für den
-einheitlichen Look.
+**Wichtig**: `edition.css` driftet auseinander, sobald sich die aktuelle Edition bei
+goa_webapp ändert (neue Farben, neues Jahr, neuer Hintergrund) - der lokale
+Dateisystem-Modus (`SOURCE=file://...`) kann das NICHT mitziehen (keine laufende Seite zum
+Abgreifen) und lässt ein vorhandenes `edition.css` unangetastet. Nach jeder
+Branding-Änderung bei goa_webapp also `./scripts/sync-styles.sh` gegen die echte Live-Seite
+erneut laufen lassen, `git diff` prüfen und committen.
+
+`shop.css` enthält nur die shop-eigenen Komponenten (Produktraster, Warenkorb,
+Rechtstexte) und baut auf denselben CSS-Variablen auf.
 
 ## Lokale Entwicklung
 
