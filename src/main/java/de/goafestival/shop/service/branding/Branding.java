@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public record Branding(
         String siteTitle,
         String logoImageUrl,
+        String faviconImageUrl,
         String backgroundImageUrl,
         String colorPrimary,
         String colorSecondary,
@@ -35,7 +36,7 @@ public record Branding(
      */
     static Branding fallback() {
         return new Branding(
-                "GOA Fanshop", null, null,
+                "GOA Fanshop", null, null, null,
                 "#2f6f68", "#e0559a", "#f2c14e",
                 "#2f6f68", "#2f6f68", "#f2c14e", "#f2c14e", "#2f6f68", "#f2c14e",
                 "20px", "999px",
