@@ -12,6 +12,15 @@ services:
       MEDUSA_ADMIN_URL: ${MEDUSA_ADMIN_URL:-https://shop-admin.heimfeld.life/app}
       MEDUSA_PUBLISHABLE_API_KEY: ${MEDUSA_PUBLISHABLE_API_KEY:-}
       MEDUSA_DEFAULT_COUNTRY_CODE: ${MEDUSA_DEFAULT_COUNTRY_CODE:-de}
+      # Where goa_webapp's GET /api/branding is fetched from (colors/fonts/background/logo
+      # of the currently active edition) - fetched live at startup and every
+      # BRANDING_REFRESH_INTERVAL_MS afterwards, see GoaWebappBrandingClient. Defaults to
+      # goa_webapp's container name on the shared "proxy" network below (both this app's
+      # and goa_webapp's containers sit on it) rather than its public domain, to avoid a
+      # pointless round-trip through Caddy/TLS for a same-host, server-to-server call -
+      # adjust if goa_webapp's actual container/port differs.
+      GOA_WEBAPP_URL: ${GOA_WEBAPP_URL:-http://life_webapp-app-1:8080}
+      BRANDING_REFRESH_INTERVAL_MS: ${BRANDING_REFRESH_INTERVAL_MS:-300000}
       THYMELEAF_CACHE: ${THYMELEAF_CACHE:-true}
     ports:
       - "${SHOP_APP_PORT:-8081}:8080"

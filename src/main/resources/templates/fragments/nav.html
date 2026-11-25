@@ -2,7 +2,10 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 <nav class="site-nav" th:fragment="nav">
-    <a class="brand" th:href="@{/}"><span>GOA Fanshop</span></a>
+    <a class="brand" th:href="@{/}">
+        <img th:if="${branding.logoImageUrl}" th:src="${branding.logoImageUrl}" alt="Logo"/>
+        <span th:unless="${branding.logoImageUrl}">GOA Fanshop</span>
+    </a>
     <div class="nav-links">
         <a class="pill" th:href="@{/}">Produkte</a>
         <a class="pill" th:href="@{/warenkorb}">Warenkorb</a>

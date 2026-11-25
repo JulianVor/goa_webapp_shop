@@ -5,14 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title th:text="${pageTitle} ?: 'Fanshop – Grumbrechtstraßen Open Air'">Fanshop</title>
     <link rel="stylesheet" th:href="@{/css/style.css}"/>
-    <!-- Synced at deploy time from goa_webapp's currently active edition (see
-         scripts/sync-styles.sh) - sets the actual colors/fonts/background style.css's
-         own :root only has fallback values for. Missing until the first sync has run. -->
-    <link rel="stylesheet" th:href="@{/css/edition.css}"/>
     <link rel="stylesheet" th:href="@{/css/shop.css}"/>
     <!-- Same combined Google Fonts request goa_webapp uses (see its fragments/head.html) -
          loaded unconditionally since this app has no per-edition font choice to branch on. -->
     <link rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600&family=Poppins:wght@400;600&display=swap"/>
+    <!-- goa_webapp's current colors/fonts/background, fetched live at startup/periodically
+         (see GoaWebappBrandingClient) rather than frozen into a deploy-time sync - stays in
+         sync with whatever edition is currently active there without a manual re-sync.
+         "branding" always has a value (built-in fallback before the first successful
+         fetch), mirroring goa_webapp's own fragments/head.html :root block. -->
+    <style th:utext="|
+        :root {
+            --color-primary: ${branding.colorPrimary};
+            --color-secondary: ${branding.colorSecondary};
+            --color-accent: ${branding.colorAccent};
+            --color-box: ${branding.colorBox};
+            --color-accent-box: ${branding.colorAccentBox};
+            --color-heading: ${branding.colorHeading};
+            --color-button: ${branding.colorButton};
+            --color-heading-outline: ${branding.colorHeadingOutline};
+            --color-text: ${branding.colorText};
+            --box-radius: ${branding.boxRadius};
+            --pill-radius: ${branding.pillRadius};
+            --bg-image: url('${branding.backgroundImageUrl ?: ''}');
+            --font-display: ${branding.fontDisplay};
+            --font-body: ${branding.fontBody};
+            --font-weight-display: ${branding.fontWeightDisplay};
+            --font-weight-body: ${branding.fontWeightBody};
+        }
+    |"></style>
 </head>
 </html>

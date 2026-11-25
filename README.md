@@ -31,29 +31,42 @@ hier deckt nur ab, was Medusa nicht mitbringt:
 
 ## Styles von goa_webapp
 
-`static/css/style.css` und `static/fonts/Brugty.ttf` sind **synchronisierte Kopien** aus
-goa_webapp (nicht live verlinkt, siehe Konzept-Diskussion "Option B"). `style.css`
-definiert dabei nur, *wie* eine Reihe CSS-Variablen (`--color-*`, `--font-*`,
-`--box-radius`, `--pill-radius`, `--bg-image`) benutzt werden - die tatsächlichen *Werte*
-(welche Farben, welches der beiden Font-Paare Brugty/Poppins vs. Bebas Neue/Oswald,
-welches Hintergrundbild) sind bei goa_webapp selbst **pro aktueller Edition** aus der
-Datenbank und werden dort serverseitig in `fragments/head.html` injiziert - die hat dieser
-Shop bewusst nicht (keine DB-Kopplung an goa_webapp). Stattdessen zieht
-`scripts/sync-styles.sh` sich diesen gerenderten `<style>`-Block direkt von der laufenden
-Startseite und friert ihn in `static/css/edition.css` ein (inkl. des Hintergrundbilds,
-falls als server-relativer Pfad referenziert):
+Zwei getrennte Mechanismen, je nachdem wie oft sich die Sache ändert:
+
+**`static/css/style.css` und `static/fonts/Brugty.ttf`** sind **deploy-zeit-synchronisierte
+Kopien** aus goa_webapp (siehe Konzept-Diskussion "Option B") - sie definieren nur, *wie*
+eine Reihe CSS-Variablen (`--color-*`, `--font-*`, `--box-radius`, `--pill-radius`,
+`--bg-image`) benutzt werden, und ändern sich selbst selten (neue CSS-Komponente, neue
+Schriftdatei). Neu ziehen mit:
 
 ```bash
 ./scripts/sync-styles.sh                                   # von https://heimfeld.life
 SOURCE=file:///pfad/zu/goa_webapp/src/main/resources/static ./scripts/sync-styles.sh  # lokal
 ```
 
-**Wichtig**: `edition.css` driftet auseinander, sobald sich die aktuelle Edition bei
-goa_webapp ändert (neue Farben, neues Jahr, neuer Hintergrund) - der lokale
-Dateisystem-Modus (`SOURCE=file://...`) kann das NICHT mitziehen (keine laufende Seite zum
-Abgreifen) und lässt ein vorhandenes `edition.css` unangetastet. Nach jeder
-Branding-Änderung bei goa_webapp also `./scripts/sync-styles.sh` gegen die echte Live-Seite
-erneut laufen lassen, `git diff` prüfen und committen.
+Danach `git diff` prüfen und committen.
+
+**Die tatsächlichen *Werte*** dieser Variablen (welche Farben, welches der beiden
+Font-Paare Brugty/Poppins vs. Bebas Neue/Oswald, Hintergrundbild, Logo) sind bei goa_webapp
+**pro aktueller Edition** aus der Datenbank und ändern sich viel öfter (jedes neue "Jahr").
+Dafür gibt's **keinen** Sync-Schritt mehr: `GoaWebappBrandingClient` holt sich
+`GET /api/branding` von goa_webapp (`GOA_WEBAPP_URL`, siehe `.env.example`) live beim Start
+und danach alle `BRANDING_REFRESH_INTERVAL_MS` (Default 5 Min.) erneut, cached das Ergebnis
+im Speicher und rendert `fragments/head.html`/`fragments/nav.html` direkt damit - keine
+manuelle Aktion nötig, wenn sich bei goa_webapp die Edition ändert. Ist goa_webapp gerade
+nicht erreichbar, bleibt der zuletzt bekannte Stand (oder ein eingebauter generischer
+Fallback, vor dem allerersten erfolgreichen Abruf) aktiv, statt dass die Seite kaputtgeht.
+
+**Wichtig für den Server**: `GOA_WEBAPP_URL` zeigt standardmäßig auf goa_webapps
+Container-Namen im gemeinsamen `proxy`-Netzwerk (kein Umweg über Caddy/TLS für einen
+Server-zu-Server-Call), **nicht** auf die öffentliche Domain. Damit die darin enthaltenen
+Hintergrundbild-/Logo-URLs trotzdem korrekt auf `https://heimfeld.life/...` zeigen (statt
+auf die interne Container-Adresse, die der Browser der Besucher*innen nie erreichen kann -
+derselbe Fehler wie der `localhost:9000`-Bug bei Medusa), **muss** `APP_BASE_URL` in
+goa_webapps eigener `.env` auf `https://heimfeld.life` gesetzt sein. Prüfen mit:
+```bash
+docker compose -f /opt/life_webapp/docker-compose.yml run --rm app env | grep APP_BASE_URL
+```
 
 `shop.css` enthält nur die shop-eigenen Komponenten (Produktraster, Warenkorb,
 Rechtstexte) und baut auf denselben CSS-Variablen auf.

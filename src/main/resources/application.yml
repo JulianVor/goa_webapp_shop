@@ -41,3 +41,8 @@ app:
     # ISO 3166-1 alpha-2 country code used to resolve the Medusa region (and thus
     # currency/pricing/tax) for anonymous storefront visitors - see MedusaStoreClient.
     default-country-code: ${MEDUSA_DEFAULT_COUNTRY_CODE:de}
+  branding:
+    # Base URL goa_webapp's GET /api/branding is fetched from, live at startup and
+    # periodically afterwards - see GoaWebappBrandingClient. No trailing slash.
+    goa-webapp-url: ${GOA_WEBAPP_URL:https://heimfeld.life}
+    refresh-interval-ms: ${BRANDING_REFRESH_INTERVAL_MS:300000}
