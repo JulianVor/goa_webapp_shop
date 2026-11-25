@@ -6,7 +6,10 @@
    ========================================================================== */
 
 body {
-    background: #171717;
+    /* No background here on purpose - style.css's own comment on .page-bg explains why:
+       the canvas color belongs on <html> only (which style.css already sets); giving
+       <body> its own opaque background blots out the fixed .page-bg layer (the edition's
+       background photo) behind it, regardless of .page-bg's z-index. */
     color: var(--color-text);
     font-family: var(--font-body);
     margin: 0;
