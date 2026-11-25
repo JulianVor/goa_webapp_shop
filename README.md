@@ -61,10 +61,22 @@ Admin-Bereich: `http://localhost:8080/admin` (Standard-Login `admin`/`admin`, ü
 
 ## Deployment
 
-`docker-compose.yml` geht davon aus, dass goa_webapps Postgres-Container und Caddy
-bereits in einem gemeinsamen Docker-Netzwerk laufen (siehe `.env.example`,
-`SHARED_NETWORK_NAME` an den echten Netzwerknamen auf dem Server anpassen - mit
-`docker network ls` prüfen). Einmalig auf dem geteilten Postgres-Container eine eigene
+`docker-compose.yml` geht von **zwei unterschiedlichen** Docker-Netzwerken aus - Caddys
+Netzwerk und das Netzwerk, auf dem goa_webapps Postgres-Container sitzt, sind auf dem
+Server i.d.R. NICHT dasselbe. Beide Netzwerknamen herausfinden mit:
+
+```bash
+docker inspect <goa_webapp-app-container> \
+  --format '{{range $n,$c := .NetworkSettings.Networks}}{{$n}}{{"\n"}}{{end}}'
+docker inspect <goa_webapp-db-container> \
+  --format '{{range $n,$c := .NetworkSettings.Networks}}{{$n}}{{"\n"}}{{end}}'
+```
+
+Den Caddy-Netzwerknamen als `PROXY_NETWORK_NAME`, den Postgres-Netzwerknamen als
+`DB_NETWORK_NAME` in `.env` setzen (siehe `.env.example`). `SHOP_DB_HOST` ist dabei der
+**Containername** des Postgres-Containers (z.B. `life_webapp-db-1`, per `docker ps`
+ermitteln), keine Compose-Service-Alias - dieses Projekt ist nicht Teil von goa_webapps
+eigener `docker-compose.yml`. Einmalig auf dem geteilten Postgres-Container eine eigene
 Datenbank für dieses Projekt anlegen (Befehl in `.env.example`).
 
 Neuer Caddy-Block, z.B.:

@@ -16,15 +16,20 @@ services:
     ports:
       - "${SHOP_APP_PORT:-8081}:8080"
     networks:
-      - shared
+      - proxy
+      - db-net
 
 networks:
-  # Joins the same Docker network goa_webapp's own containers and Caddy already use, so
-  # this app can reach the shared Postgres container by its service name ("db" above, or
-  # whatever SHOP_DB_HOST is set to) and Caddy can reach this one by "shop-app". Check
-  # the actual name on your server with `docker network ls` / `docker inspect` on the
-  # goa_webapp stack - it's whatever the user's own Canasta/Caddy setup created, "fotosvorju-proxy"
-  # is just this deployment's example from the shop concept discussion, not a Docker default.
-  shared:
+  # Caddy's own network - lets Caddy reach this container by its service name
+  # ("shop-app"). Usually NOT the same network goa_webapp's Postgres is on - find both
+  # with `docker inspect <goa_webapp-container> --format '{{range $n,$c :=
+  # .NetworkSettings.Networks}}{{$n}}{{"\n"}}{{end}}'`.
+  proxy:
     external: true
-    name: ${SHARED_NETWORK_NAME:-fotosvorju-proxy}
+    name: ${PROXY_NETWORK_NAME:-fotosvorju-proxy}
+  # The network goa_webapp's own containers (app + Postgres) sit on - usually Compose's
+  # auto-created default network for that project, e.g. "life_webapp_default". Lets this
+  # app reach the shared Postgres container by name (SHOP_DB_HOST, e.g. "life_webapp-db-1").
+  db-net:
+    external: true
+    name: ${DB_NETWORK_NAME:-life_webapp_default}
