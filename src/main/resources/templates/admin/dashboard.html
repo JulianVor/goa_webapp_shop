@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head-admin :: head-admin('Dashboard')}"></head>
+<body class="admin-body">
+<div th:replace="~{fragments/admin-nav :: admin-nav('dashboard')}"></div>
+
+<main class="admin-main">
+    <h1>Übersicht</h1>
+
+    <div class="admin-header-row">
+        <p>
+            Produkte, Varianten, Preise, Lagerbestand und Bestellungen werden nicht hier verwaltet,
+            sondern im Medusa Admin Dashboard.
+        </p>
+    </div>
+    <a class="btn btn-primary" th:href="${medusaAdminUrl}" target="_blank">Produkte im Medusa Admin verwalten ↗</a>
+
+    <p th:if="${shopSettings.maintenanceMode}" class="flash-error" style="margin-top:2rem;">
+        Der Shop zeigt Besuchern aktuell die Wartungsseite ("Fanshop kommt bald"). Unter
+        <a th:href="@{/admin/settings}">Einstellungen</a> ausschalten, sobald Produkte bereitstehen.
+    </p>
+</main>
+</body>
+</html>

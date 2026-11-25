@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${product.title()})}"></head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+<main>
+    <div class="product-detail">
+        <img class="product-detail-image" th:if="${product.thumbnail()}" th:src="${product.thumbnail()}" th:alt="${product.title()}"/>
+        <div>
+            <h1 class="product-detail-title" th:text="${product.title()}">Produktname</h1>
+            <p class="product-detail-description" th:if="${product.description()}" th:text="${product.description()}">Beschreibung</p>
+
+            <form th:action="@{/warenkorb/hinzufuegen}" method="post" th:if="${not #lists.isEmpty(product.variants())}">
+                <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <select class="variant-select" name="variantId" th:if="${#lists.size(product.variants()) > 1}">
+                    <option th:each="variant : ${product.variants()}" th:value="${variant.id()}" th:text="${variant.title()}">Variante</option>
+                </select>
+                <input type="hidden" th:if="${#lists.size(product.variants()) == 1}" name="variantId" th:value="${product.variants()[0].id()}"/>
+                <button type="submit" class="btn">In den Warenkorb</button>
+            </form>
+            <p th:if="${#lists.isEmpty(product.variants())}">Dieses Produkt ist aktuell nicht bestellbar.</p>
+        </div>
+    </div>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: goa-webapp-shop
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/goa_webapp_shop}
+    driver-class-name: org.postgresql.Driver
+    username: ${SPRING_DATASOURCE_USERNAME:shop}
+    password: ${SPRING_DATASOURCE_PASSWORD:shop}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+  thymeleaf:
+    cache: ${THYMELEAF_CACHE:true}
+
+server:
+  port: 8080
+  # Without this, ServletUriComponentsBuilder trusts only the raw request Tomcat sees -
+  # "http" and whatever internal host/port Caddy connects with - instead of the
+  # X-Forwarded-* headers Caddy sets for the real public scheme/host.
+  forward-headers-strategy: framework
+
+app:
+  admin:
+    username: ${ADMIN_USERNAME:admin}
+    password: ${ADMIN_PASSWORD:admin}
+  medusa:
+    # Base URL of the Medusa backend's Store API (goa_webapp_shop_admin), e.g.
+    # https://shop-admin.heimfeld.life - no trailing slash.
+    store-api-url: ${MEDUSA_STORE_API_URL:http://localhost:9000}
+    # Public URL of the Medusa Admin Dashboard, for the "Produkte verwalten" link on
+    # this app's own admin dashboard - usually store-api-url + "/app".
+    admin-url: ${MEDUSA_ADMIN_URL:http://localhost:9000/app}
+    # Publishable API key from the Medusa admin (Settings > Publishable API Keys),
+    # scoped to the sales channel this storefront reads from. Required for every
+    # Store API call - requests without it are rejected.
+    publishable-api-key: ${MEDUSA_PUBLISHABLE_API_KEY:}
+    # ISO 3166-1 alpha-2 country code used to resolve the Medusa region (and thus
+    # currency/pricing/tax) for anonymous storefront visitors - see MedusaStoreClient.
+    default-country-code: ${MEDUSA_DEFAULT_COUNTRY_CODE:de}

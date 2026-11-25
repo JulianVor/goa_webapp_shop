@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Datenschutz')}"></head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+<main>
+    <h1 class="page-title">Datenschutzerklärung</h1>
+    <div class="legal-content" th:utext="${shopSettings.datenschutzText}">Noch nicht hinterlegt.</div>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

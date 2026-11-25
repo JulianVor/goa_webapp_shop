@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Warenkorb')}"></head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+<main>
+    <h1 class="page-title">Warenkorb</h1>
+    <p class="flash-success" th:if="${success}" th:text="${success}"></p>
+
+    <div th:if="${cart == null or #lists.isEmpty(cart.items())}" class="empty-state">
+        <p>Dein Warenkorb ist leer.</p>
+        <a class="btn" th:href="@{/}">Weiter einkaufen</a>
+    </div>
+
+    <th:block th:if="${cart != null and not #lists.isEmpty(cart.items())}">
+        <table class="cart-table">
+            <thead>
+            <tr><th>Produkt</th><th>Menge</th><th>Preis</th><th></th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${cart.items()}">
+                <td th:text="${item.title()}">Shirt</td>
+                <td>
+                    <form th:action="@{/warenkorb/menge}" method="post" class="inline-form">
+                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <input type="hidden" name="lineItemId" th:value="${item.id()}"/>
+                        <input type="number" name="quantity" min="1" th:value="${item.quantity()}" onchange="this.form.submit()"/>
+                    </form>
+                </td>
+                <td th:text="${#numbers.formatDecimal(item.subtotal(), 1, 2)} + ' ' + ${cart.currency_code().toUpperCase()}">29,99 EUR</td>
+                <td>
+                    <form th:action="@{/warenkorb/entfernen}" method="post" class="inline-form">
+                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <input type="hidden" name="lineItemId" th:value="${item.id()}"/>
+                        <button type="submit" class="link-button">Entfernen</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr class="cart-total-row">
+                <td colspan="2">Gesamt</td>
+                <td th:text="${#numbers.formatDecimal(cart.total(), 1, 2)} + ' ' + ${cart.currency_code().toUpperCase()}">0,00 EUR</td>
+                <td></td>
+            </tr>
+            </tfoot>
+        </table>
+        <a class="btn" th:href="@{/kasse}">Zur Kasse</a>
+    </th:block>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

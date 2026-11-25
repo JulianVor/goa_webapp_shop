@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(pageTitle)">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${pageTitle} ?: 'Fanshop – Grumbrechtstraßen Open Air'">Fanshop</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" th:href="@{/css/shop.css}"/>
+    <!-- Same combined Google Fonts request goa_webapp uses (see its fragments/head.html) -
+         loaded unconditionally since this app has no per-edition font choice to branch on. -->
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600&family=Poppins:wght@400;600&display=swap"/>
+</head>
+</html>

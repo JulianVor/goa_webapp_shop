@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Fanshop – Grumbrechtstraßen Open Air')}"></head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+<main>
+    <h1 class="page-title">Fanshop</h1>
+
+    <div th:if="${#lists.isEmpty(products)}" class="empty-state">
+        <p>Aktuell sind keine Produkte verfügbar - schau bald wieder vorbei!</p>
+    </div>
+
+    <div class="product-grid" th:unless="${#lists.isEmpty(products)}">
+        <a class="product-card" th:each="product : ${products}"
+           th:href="@{'/produkte/' + ${product.id()}}">
+            <img class="product-card-image" th:if="${product.thumbnail()}" th:src="${product.thumbnail()}" th:alt="${product.title()}"/>
+            <div class="product-card-body">
+                <h2 class="product-card-title" th:text="${product.title()}">Produktname</h2>
+                <p class="product-card-price" th:if="${product.lowestPrice() != null}"
+                   th:text="${#numbers.formatDecimal(product.lowestPrice().calculated_amount(), 1, 2)} + ' ' + ${product.lowestPrice().currency_code().toUpperCase()}">29,99 EUR</p>
+            </div>
+        </a>
+    </div>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,132 @@
+package de.goafestival.shop.web;
+
+import de.goafestival.shop.service.medusa.MedusaStoreClient;
+import de.goafestival.shop.service.medusa.dto.MedusaCart;
+import de.goafestival.shop.service.medusa.dto.MedusaProduct;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.ResponseCookie;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+/**
+ * The public storefront: product list/detail and a session-cookie-based cart, both
+ * backed entirely by Medusa's Store API (see MedusaStoreClient) - this app stores no
+ * product or cart data of its own.
+ */
+@Controller
+public class StorefrontController {
+
+    private static final String CART_COOKIE = "cart_id";
+
+    private final MedusaStoreClient medusaStoreClient;
+
+    public StorefrontController(MedusaStoreClient medusaStoreClient) {
+        this.medusaStoreClient = medusaStoreClient;
+    }
+
+    @GetMapping("/")
+    public String home(Model model) {
+        model.addAttribute("products", medusaStoreClient.listProducts());
+        return "home";
+    }
+
+    @GetMapping("/produkte/{id}")
+    public String productDetail(@PathVariable String id, Model model) {
+        MedusaProduct product = medusaStoreClient.getProduct(id);
+        model.addAttribute("product", product);
+        return "product-detail";
+    }
+
+    @GetMapping("/warenkorb")
+    public String cart(@CookieValue(name = CART_COOKIE, required = false) String cartId, Model model) {
+        MedusaCart cart = cartId != null ? medusaStoreClient.getCart(cartId) : null;
+        model.addAttribute("cart", cart);
+        return "cart";
+    }
+
+    @PostMapping("/warenkorb/hinzufuegen")
+    public String addToCart(@RequestParam String variantId,
+                             @RequestParam(defaultValue = "1") int quantity,
+                             @CookieValue(name = CART_COOKIE, required = false) String cartId,
+                             HttpServletRequest request, HttpServletResponse response,
+                             RedirectAttributes redirectAttributes) {
+        String effectiveCartId = cartId;
+        if (effectiveCartId == null) {
+            MedusaCart newCart = medusaStoreClient.createCart();
+            effectiveCartId = newCart.id();
+            response.addHeader("Set-Cookie", ResponseCookie.from(CART_COOKIE, effectiveCartId)
+                    .path("/")
+                    .maxAge(java.time.Duration.ofDays(30))
+                    .httpOnly(true)
+                    .sameSite("Lax")
+                    .secure(request.isSecure())
+                    .build().toString());
+        }
+        medusaStoreClient.addLineItem(effectiveCartId, variantId, quantity);
+        redirectAttributes.addFlashAttribute("success", "Zum Warenkorb hinzugefügt.");
+        return "redirect:/warenkorb";
+    }
+
+    @PostMapping("/warenkorb/menge")
+    public String updateQuantity(@RequestParam String lineItemId, @RequestParam int quantity,
+                                  @CookieValue(name = CART_COOKIE, required = false) String cartId) {
+        if (cartId != null) {
+            medusaStoreClient.updateLineItemQuantity(cartId, lineItemId, quantity);
+        }
+        return "redirect:/warenkorb";
+    }
+
+    @PostMapping("/warenkorb/entfernen")
+    public String removeFromCart(@RequestParam String lineItemId,
+                                  @CookieValue(name = CART_COOKIE, required = false) String cartId) {
+        if (cartId != null) {
+            medusaStoreClient.removeLineItem(cartId, lineItemId);
+        }
+        return "redirect:/warenkorb";
+    }
+
+    @GetMapping("/wartung")
+    public String maintenance() {
+        return "maintenance";
+    }
+
+    /**
+     * Placeholder: address/shipping-option selection and the actual Stripe payment step
+     * (Medusa payment collections + Stripe Elements) aren't wired up yet - that needs a
+     * real Stripe account/API keys, which weren't available at the time this was built.
+     * The cart itself (via Medusa) is fully functional up to this point.
+     */
+    @GetMapping("/kasse")
+    public String checkoutStub(@CookieValue(name = CART_COOKIE, required = false) String cartId, Model model) {
+        MedusaCart cart = cartId != null ? medusaStoreClient.getCart(cartId) : null;
+        model.addAttribute("cart", cart);
+        return "checkout-stub";
+    }
+
+    @GetMapping("/impressum")
+    public String impressum() {
+        return "legal/impressum";
+    }
+
+    @GetMapping("/agb")
+    public String agb() {
+        return "legal/agb";
+    }
+
+    @GetMapping("/widerruf")
+    public String widerruf() {
+        return "legal/widerruf";
+    }
+
+    @GetMapping("/datenschutz")
+    public String datenschutz() {
+        return "legal/datenschutz";
+    }
+}

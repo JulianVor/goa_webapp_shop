@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head-admin :: head-admin('Einstellungen')}"></head>
+<body class="admin-body">
+<div th:replace="~{fragments/admin-nav :: admin-nav('settings')}"></div>
+
+<main class="admin-main">
+    <h1>Einstellungen</h1>
+
+    <p class="flash-success" th:if="${success}" th:text="${success}"></p>
+
+    <form method="post" class="admin-form" th:action="@{/admin/settings}" th:object="${settingsForm}">
+        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <fieldset>
+            <legend>Shop-Status</legend>
+            <label class="checkbox-row"><input type="checkbox" th:field="*{maintenanceMode}"/> Wartungsmodus (zeigt Besuchern "Fanshop kommt bald" statt des Sortiments)</label>
+            <label>Kontakt E-Mail<input type="email" th:field="*{contactEmail}"/></label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Impressum</legend>
+            <p class="field-hint">HTML ist erlaubt (z.B. &lt;p&gt;, &lt;br/&gt;, &lt;a&gt;).</p>
+            <label>Impressumstext (HTML)<textarea th:field="*{impressumText}" rows="10" class="code-textarea"></textarea></label>
+        </fieldset>
+
+        <fieldset>
+            <legend>AGB</legend>
+            <label>AGB-Text (HTML)<textarea th:field="*{agbText}" rows="14" class="code-textarea"></textarea></label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Widerrufsrecht</legend>
+            <label>Widerrufsbelehrung (HTML)<textarea th:field="*{widerrufText}" rows="14" class="code-textarea"></textarea></label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Datenschutz</legend>
+            <label>Datenschutzerklärung (HTML)<textarea th:field="*{datenschutzText}" rows="14" class="code-textarea"></textarea></label>
+        </fieldset>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Speichern</button>
+            <a class="btn" th:href="@{/admin}">Zurück</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

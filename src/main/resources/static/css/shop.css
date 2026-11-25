@@ -1,0 +1,228 @@
+/* ==========================================================================
+   goa_webapp_shop - shop-specific components.
+   Colors/fonts/box-radius come from style.css (synced from goa_webapp, see
+   scripts/sync-styles.sh) via its CSS custom properties - this file only adds
+   the layout this app's own pages need (product grid, cart, legal pages).
+   ========================================================================== */
+
+body {
+    background: #171717;
+    color: var(--color-text);
+    font-family: var(--font-body);
+    margin: 0;
+}
+
+main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+}
+
+a {
+    color: inherit;
+}
+
+.site-nav .nav-links {
+    display: flex;
+    gap: 0.75rem;
+    margin-left: auto;
+    flex-wrap: wrap;
+}
+
+.site-footer {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 2rem 1.5rem;
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.page-title {
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-display, normal);
+    color: var(--color-heading);
+    -webkit-text-stroke: 1px var(--color-heading-outline);
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    margin-bottom: 1.5rem;
+}
+
+/* ---------------------------- Product grid ---------------------------- */
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.product-card {
+    display: block;
+    background: var(--color-box);
+    border-radius: var(--box-radius);
+    overflow: hidden;
+    text-decoration: none;
+    transition: transform 0.2s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+}
+
+.product-card-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    background: #2a2a2a;
+}
+
+.product-card-body {
+    padding: 1rem 1.25rem 1.25rem;
+}
+
+.product-card-title {
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-display, normal);
+    color: var(--color-heading);
+    font-size: 1.2rem;
+    margin: 0 0 0.4rem;
+}
+
+.product-card-price {
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+.empty-state {
+    opacity: 0.75;
+    padding: 3rem 0;
+    text-align: center;
+}
+
+/* ---------------------------- Product detail ---------------------------- */
+
+.product-detail {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 2.5rem;
+}
+
+@media (max-width: 720px) {
+    .product-detail { grid-template-columns: 1fr; }
+}
+
+.product-detail-image {
+    width: 100%;
+    border-radius: var(--box-radius);
+    background: #2a2a2a;
+}
+
+.product-detail-title {
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-display, normal);
+    color: var(--color-heading);
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    margin: 0 0 1rem;
+}
+
+.product-detail-description {
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.variant-select {
+    display: block;
+    width: 100%;
+    padding: 0.7rem 1rem;
+    border-radius: 999px;
+    border: none;
+    margin-bottom: 1.25rem;
+    font-size: 1rem;
+}
+
+.btn {
+    display: inline-block;
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-display, normal);
+    background: var(--color-accent-box);
+    color: var(--color-button);
+    border: none;
+    border-radius: var(--pill-radius);
+    padding: 0.85rem 2.2rem;
+    font-size: 1.05rem;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn:hover {
+    filter: brightness(1.08);
+}
+
+.btn-secondary {
+    background: transparent;
+    border: 2px solid var(--color-accent-box);
+    color: var(--color-text);
+}
+
+/* ---------------------------- Cart ---------------------------- */
+
+.cart-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 2rem;
+}
+
+.cart-table th, .cart-table td {
+    text-align: left;
+    padding: 0.85rem 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cart-table input[type="number"] {
+    width: 4rem;
+    padding: 0.3rem;
+}
+
+.cart-total-row td {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.inline-form {
+    display: inline;
+}
+
+.link-button {
+    background: none;
+    border: none;
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.95rem;
+    padding: 0;
+}
+
+.flash-success {
+    background: #2f6f4f;
+    color: #fff;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+/* ---------------------------- Legal pages / maintenance ---------------------------- */
+
+.legal-content {
+    line-height: 1.7;
+}
+
+.maintenance-page {
+    text-align: center;
+    padding: 6rem 1.5rem;
+}
+
+.maintenance-page h1 {
+    font-family: var(--font-display);
+    color: var(--color-heading);
+    font-size: clamp(2rem, 6vw, 3rem);
+}
