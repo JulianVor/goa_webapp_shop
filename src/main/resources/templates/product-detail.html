@@ -6,7 +6,11 @@
 <div th:replace="~{fragments/nav :: nav}"></div>
 <main>
     <div class="product-detail">
-        <img class="product-detail-image" th:if="${product.thumbnail()}" th:src="${product.thumbnail()}" th:alt="${product.title()}"/>
+        <div class="product-gallery" th:if="${not #lists.isEmpty(product.images())}">
+            <img class="product-detail-image" th:each="image : ${product.images()}" th:src="${image.url()}" th:alt="${product.title()}"/>
+        </div>
+        <img class="product-detail-image" th:if="${#lists.isEmpty(product.images()) and product.thumbnail()}"
+             th:src="${product.thumbnail()}" th:alt="${product.title()}"/>
         <div>
             <h1 class="product-detail-title" th:text="${product.title()}">Produktname</h1>
             <p class="product-detail-description" th:if="${product.description()}" th:text="${product.description()}">Beschreibung</p>

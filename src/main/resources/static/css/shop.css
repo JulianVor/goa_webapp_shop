@@ -126,6 +126,12 @@ a {
     background: #2a2a2a;
 }
 
+.product-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
 .product-detail-title {
     font-family: var(--font-display);
     font-weight: var(--font-weight-display, normal);
