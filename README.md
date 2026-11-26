@@ -45,8 +45,17 @@ am jeweiligen Produkt unter **Metadata** folgende Keys setzen:
 
 - `preorder_deadline` ist ISO-8601 mit Zeitzonen-Offset (siehe Beispiel) - ohne Offset
   schlägt das Parsen fehl und das Produkt bleibt (absichtlich fail-open) sichtbar.
-- `pickup_only` ist optional, zeigt nur einen Hinweis "Nur Abholung, kein Versand" an -
-  hat sonst keine Auswirkung (kein eigener Versandausschluss in Medusa konfiguriert).
+- `pickup_only` ist optional und zeigt den Hinweis "Nur Abholung auf dem Festival" an.
+  Damit das auch im Checkout wirkt (kein Versandzwang/keine Versandkosten für dieses
+  Produkt), muss es zusätzlich im Medusa Admin einem eigenen **Shipping Profile**
+  zugewiesen werden (Produkt bearbeiten → Organize → Shipping Profile), das eine eigene,
+  kostenlose Versandart hat (Settings → Locations → bei der Service Zone eine neue
+  Shipping Option anlegen, z.B. "Abholung beim Festival", Preis 0 €). Der Checkout
+  erkennt automatisch, wenn ein Warenkorb Artikel aus mehreren Shipping Profiles enthält
+  (z.B. ein Abhol-Artikel zusammen mit einem Versand-Artikel) und lässt pro Profile eine
+  eigene Versandart wählen (siehe CheckoutController.shippingGroups). Ohne eigenes
+  Shipping Profile bleibt ein `pickup_only`-Produkt im Standard-Profile und wird ganz
+  normal mit Versandkosten berechnet - das Metadata-Feld allein reicht dafür nicht.
 - Nach Ablauf von `preorder_deadline` verschwindet das Produkt automatisch aus der
   Übersicht und die Detailseite liefert 404 - keine manuelle Aktion nötig.
 - Ein Produkt ohne `preorder: true` ist komplett unbeeinflusst - normaler Lagerartikel.
@@ -161,7 +170,9 @@ genauso für `SHOP_DB_USER`/`SHOP_DB_NAME`.
   in `goa_webapp_shop_admin` (`STRIPE_API_KEY`), siehe dessen README für die
   Webhook-Einrichtung. Versandarten/-zonen müssen im Medusa Admin konfiguriert sein
   (Settings → Locations → Shipping Options), sonst zeigt der Versand-Schritt keine
-  Optionen an.
+  Optionen an. Enthält ein Warenkorb Artikel aus mehreren Shipping Profiles (siehe
+  `pickup_only` oben), zeigt der Versand-Schritt eine eigene Versandart-Auswahl pro
+  Profile statt nur einer.
 - **Bestellbestätigung per Mail**: wird nach erfolgreicher Zahlung automatisch an die
   beim Checkout angegebene Adresse verschickt (siehe `OrderMailService`), über
   `MAIL_HOST`/`MAIL_USERNAME`/`MAIL_PASSWORD`/`MAIL_FROM` (gleiches SMTP-Setup wie

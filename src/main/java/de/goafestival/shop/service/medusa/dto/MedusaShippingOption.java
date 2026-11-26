@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record MedusaShippingOption(String id, String name, BigDecimal amount, CalculatedPrice calculated_price) {
+public record MedusaShippingOption(String id, String name, String shipping_profile_id, BigDecimal amount,
+                                    CalculatedPrice calculated_price) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record CalculatedPrice(BigDecimal calculated_amount) {

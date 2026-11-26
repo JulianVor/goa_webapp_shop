@@ -42,15 +42,24 @@
     <form th:if="${step == 'shipping'}" th:action="@{/kasse/versand}" method="post" class="checkout-form">
         <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
         <h2>Versandart</h2>
-        <label class="shipping-option" th:each="option : ${shippingOptions}">
-            <input type="radio" name="shippingOptionId" th:value="${option.id()}" required="required"/>
-            <span th:text="${option.name()}">Versand</span>
-            <span th:if="${option.price() != null}">
-                <th:block th:replace="~{fragments/price :: amount(${option.price()}, ${cart.currency_code()})}"/>
-            </span>
-        </label>
-        <p th:if="${#lists.isEmpty(shippingOptions)}">Aktuell ist keine Versandart konfiguriert - bitte kontaktiere uns.</p>
-        <button type="submit" class="btn" th:disabled="${#lists.isEmpty(shippingOptions)}">Weiter zur Zahlung</button>
+        <!-- Almost always exactly one group (everything in the cart shares one Medusa Shipping
+             Profile) - more than one means the cart mixes e.g. a "pickup only" item with a
+             mailed one, and each needs its own method chosen (see CheckoutController). -->
+        <div th:each="group : ${shippingGroups}" style="margin-bottom: 1.25rem;">
+            <p class="field-hint" th:if="${shippingGroups.size() > 1}">
+                Versandart für <strong th:text="${#strings.listJoin(group.itemTitles(), ', ')}">Artikel</strong>:
+            </p>
+            <label class="shipping-option" th:each="option : ${group.options()}">
+                <input type="radio" th:name="|shippingOptionId_${group.profileId()}|" th:value="${option.id()}"
+                       th:checked="${option.id() == group.selectedOptionId()}" required="required"/>
+                <span th:text="${option.name()}">Versand</span>
+                <span th:if="${option.price() != null}">
+                    <th:block th:replace="~{fragments/price :: amount(${option.price()}, ${cart.currency_code()})}"/>
+                </span>
+            </label>
+            <p th:if="${#lists.isEmpty(group.options())}">Für diese Artikel ist aktuell keine Versandart konfiguriert - bitte kontaktiere uns.</p>
+        </div>
+        <button type="submit" class="btn" th:disabled="${not allGroupsHaveOptions}">Weiter zur Zahlung</button>
     </form>
 
     <div th:if="${step == 'payment'}" class="checkout-form">

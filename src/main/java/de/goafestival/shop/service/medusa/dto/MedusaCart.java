@@ -34,7 +34,8 @@ public record MedusaCart(
             String variant_id,
             String variant_title,
             int quantity,
-            BigDecimal unit_price) {
+            BigDecimal unit_price,
+            Product product) {
 
         /**
          * Medusa's line item "subtotal" is a computed field that's only included in the
@@ -44,6 +45,28 @@ public record MedusaCart(
         public BigDecimal subtotal() {
             return unit_price == null ? BigDecimal.ZERO : unit_price.multiply(BigDecimal.valueOf(quantity));
         }
+
+        /**
+         * Which Medusa Shipping Profile this item's product belongs to - products with
+         * different profiles (e.g. a "pickup only" festival item vs. a regular mailed one)
+         * need their own, separate shipping method selection - see CheckoutController.
+         */
+        public String shippingProfileId() {
+            return product != null && product.shipping_profile() != null ? product.shipping_profile().id() : null;
+        }
+
+        public String shippingProfileName() {
+            return product != null && product.shipping_profile() != null ? product.shipping_profile().name() : null;
+        }
+    }
+
+    /** Only carries the one relation (shipping_profile) this app actually needs from the product. */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Product(ShippingProfile shipping_profile) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record ShippingProfile(String id, String name) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -82,9 +105,5 @@ public record MedusaCart(
         return shipping_address != null
                 && shipping_address.address_1() != null
                 && !shipping_address.address_1().isBlank();
-    }
-
-    public boolean hasShippingMethod() {
-        return shipping_methods != null && !shipping_methods.isEmpty();
     }
 }

@@ -115,8 +115,12 @@ public class MedusaStoreClient {
         return restClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/store/carts/{id}")
                         // Medusa's default cart fields don't include a shipping method's
-                        // display name - only its shipping_option_id.
-                        .queryParam("fields", "+shipping_methods.name")
+                        // display name (only its shipping_option_id), nor a line item's
+                        // product's shipping profile - needed to tell which cart items need
+                        // which shipping method when they don't all share one (see
+                        // CheckoutController - e.g. a "pickup only" item mixed with a mailed one).
+                        .queryParam("fields", "+shipping_methods.name,"
+                                + "+items.product.shipping_profile.id,+items.product.shipping_profile.name")
                         .build(cartId))
                 .retrieve()
                 .body(CartResponse.class)
@@ -158,13 +162,22 @@ public class MedusaStoreClient {
                 .cart();
     }
 
+    /**
+     * Returns EVERY shipping option reachable from the cart's sales channel, regardless of
+     * which of the cart's items (if any) actually belong to that option's shipping profile -
+     * Medusa does not filter this down to "only what's relevant" itself (verified directly
+     * against its listShippingOptionsForCartWorkflow source: it filters by fulfillment set,
+     * never by the cart's own line items' shipping profiles). Grouping/filtering by
+     * shipping_profile_id against the cart's items is this app's job - see CheckoutController.
+     */
     public List<MedusaShippingOption> listShippingOptions(String cartId) {
         return restClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/store/shipping-options")
                         .queryParam("cart_id", cartId)
-                        // Neither is confirmed as a default field for this route - requesting
-                        // both defensively, MedusaShippingOption.price() prefers whichever is set.
-                        .queryParam("fields", "+calculated_price,+amount")
+                        // None of these three are confirmed default fields for this route -
+                        // requesting all defensively. MedusaShippingOption.price() prefers
+                        // calculated_price over the plain amount, whichever is set.
+                        .queryParam("fields", "+calculated_price,+amount,+shipping_profile_id")
                         .build())
                 .retrieve()
                 .body(ShippingOptionsResponse.class)
