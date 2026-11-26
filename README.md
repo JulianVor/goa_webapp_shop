@@ -162,6 +162,11 @@ genauso für `SHOP_DB_USER`/`SHOP_DB_NAME`.
   Webhook-Einrichtung. Versandarten/-zonen müssen im Medusa Admin konfiguriert sein
   (Settings → Locations → Shipping Options), sonst zeigt der Versand-Schritt keine
   Optionen an.
+- **Bestellbestätigung per Mail**: wird nach erfolgreicher Zahlung automatisch an die
+  beim Checkout angegebene Adresse verschickt (siehe `OrderMailService`), über
+  `MAIL_HOST`/`MAIL_USERNAME`/`MAIL_PASSWORD`/`MAIL_FROM` (gleiches SMTP-Setup wie
+  goa_webapp's Newsletter, z.B. Brevo). Ohne `MAIL_HOST` wird die Mail übersprungen
+  und nur eine Warnung geloggt - der Checkout selbst schlägt dadurch nie fehl.
 - **Produkte anlegen**: passiert ausschließlich im Medusa Admin Dashboard, nicht hier.
 - Wartungsmodus ist standardmäßig **an** - im eigenen Admin-Bereich ausschalten, sobald
   Produkte in Medusa stehen.

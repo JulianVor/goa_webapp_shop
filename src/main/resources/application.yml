@@ -15,6 +15,23 @@ spring:
         format_sql: false
   thymeleaf:
     cache: ${THYMELEAF_CACHE:true}
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:true}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS:true}
+          # Without these, JavaMail's defaults are *infinite* - an unreachable/misconfigured
+          # MAIL_HOST would then hang the checkout request forever instead of failing fast
+          # (the order confirmation mail failing must never hold up the checkout response).
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
 
 server:
   port: 8080
@@ -54,3 +71,9 @@ app:
     # Medusa's registered payment provider id - must match goa_webapp_shop_admin's
     # medusa-config.ts payment provider id exactly (default there: "pp_stripe_stripe").
     provider-id: ${STRIPE_PROVIDER_ID:pp_stripe_stripe}
+  mail:
+    # Sender address for the order confirmation mail - most SMTP providers (Brevo
+    # included) reject sending as an address the authenticated account doesn't own, so
+    # this usually has to match (or be a verified alias of) MAIL_USERNAME. Falls back
+    # to MAIL_USERNAME in OrderMailService if left blank.
+    from: ${MAIL_FROM:}

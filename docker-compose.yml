@@ -28,6 +28,16 @@ services:
       # Must match goa_webapp_shop_admin's registered Stripe payment provider id exactly -
       # only needs changing if that project's medusa-config.ts payment provider id changes.
       STRIPE_PROVIDER_ID: ${STRIPE_PROVIDER_ID:-pp_stripe_stripe}
+      # SMTP server used to send the order confirmation mail (see OrderMailService). The
+      # mail is silently skipped (logged as a warning only, never fails the checkout) while
+      # MAIL_HOST is empty.
+      MAIL_HOST: ${MAIL_HOST:-}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-}
+      MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH:-true}
+      MAIL_SMTP_STARTTLS: ${MAIL_SMTP_STARTTLS:-true}
       THYMELEAF_CACHE: ${THYMELEAF_CACHE:-true}
     ports:
       - "${SHOP_APP_PORT:-8081}:8080"

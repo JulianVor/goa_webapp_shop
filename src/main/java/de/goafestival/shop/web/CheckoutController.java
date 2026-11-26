@@ -1,5 +1,6 @@
 package de.goafestival.shop.web;
 
+import de.goafestival.shop.service.mail.OrderMailService;
 import de.goafestival.shop.service.medusa.MedusaStoreClient;
 import de.goafestival.shop.service.medusa.StripeProperties;
 import de.goafestival.shop.service.medusa.dto.MedusaCart;
@@ -40,10 +41,13 @@ public class CheckoutController {
 
     private final MedusaStoreClient medusaStoreClient;
     private final StripeProperties stripeProperties;
+    private final OrderMailService orderMailService;
 
-    public CheckoutController(MedusaStoreClient medusaStoreClient, StripeProperties stripeProperties) {
+    public CheckoutController(MedusaStoreClient medusaStoreClient, StripeProperties stripeProperties,
+                               OrderMailService orderMailService) {
         this.medusaStoreClient = medusaStoreClient;
         this.stripeProperties = stripeProperties;
+        this.orderMailService = orderMailService;
     }
 
     // fragments/nav's bag-count badge needs this on every page - including checkout-success/
@@ -190,6 +194,7 @@ public class CheckoutController {
             response.addHeader("Set-Cookie", ResponseCookie.from(CartCookie.NAME, "")
                     .path("/").maxAge(0).build().toString());
             model.addAttribute("order", result.order());
+            orderMailService.sendOrderConfirmation(result.order());
             return "checkout-success";
         }
         model.addAttribute("error", result.error() != null
