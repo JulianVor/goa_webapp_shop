@@ -6,19 +6,23 @@
 <div th:replace="~{fragments/nav :: nav}"></div>
 <main>
     <div class="product-detail">
-        <div class="product-gallery" th:if="${not #lists.isEmpty(product.images())}">
-            <img class="product-detail-image" th:each="image : ${product.images()}" th:src="${image.url()}" th:alt="${product.title()}"/>
+        <div class="product-detail-media">
+            <span class="discount-badge" th:if="${product.lowestPrice() != null and product.lowestPrice().isOnSale()}"
+                  th:text="'-' + ${product.lowestPrice().discountPercent()} + '%'">-25%</span>
+            <div class="product-gallery" th:if="${not #lists.isEmpty(product.images())}">
+                <img class="product-detail-image" th:each="image : ${product.images()}" th:src="${image.url()}" th:alt="${product.title()}"/>
+            </div>
+            <img class="product-detail-image" th:if="${#lists.isEmpty(product.images()) and product.thumbnail()}"
+                 th:src="${product.thumbnail()}" th:alt="${product.title()}"/>
         </div>
-        <img class="product-detail-image" th:if="${#lists.isEmpty(product.images()) and product.thumbnail()}"
-             th:src="${product.thumbnail()}" th:alt="${product.title()}"/>
         <div>
             <h1 class="product-detail-title" th:text="${product.title()}">Produktname</h1>
             <p class="product-detail-subtitle" th:if="${product.subtitle()}" th:text="${product.subtitle()}">Untertitel</p>
             <p class="product-detail-price" th:if="${product.lowestPrice() != null}">
                 <span class="price-original" th:if="${product.lowestPrice().isOnSale()}"
                       th:text="${#numbers.formatDecimal(product.lowestPrice().original_amount(), 1, 2)} + ' ' + ${product.lowestPrice().currency_code().toUpperCase()}">20,00 EUR</span>
-                <span th:text="${#numbers.formatDecimal(product.lowestPrice().calculated_amount(), 1, 2)} + ' ' + ${product.lowestPrice().currency_code().toUpperCase()}">15,00 EUR</span>
-                <span class="sale-badge" th:if="${product.lowestPrice().isOnSale()}">Sale</span>
+                <span th:classappend="${product.lowestPrice().isOnSale()} ? 'price-sale'"
+                      th:text="${#numbers.formatDecimal(product.lowestPrice().calculated_amount(), 1, 2)} + ' ' + ${product.lowestPrice().currency_code().toUpperCase()}">15,00 EUR</span>
             </p>
 
             <p class="product-detail-description" th:if="${product.description()}" th:text="${product.description()}">Beschreibung</p>

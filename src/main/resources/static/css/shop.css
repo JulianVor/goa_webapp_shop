@@ -72,11 +72,27 @@ a {
     transform: translateY(-4px);
 }
 
+.product-card-image-wrap {
+    position: relative;
+}
+
 .product-card-image {
     width: 100%;
     aspect-ratio: 1 / 1;
     object-fit: cover;
     background: #2a2a2a;
+}
+
+.discount-badge {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    background: #c0392b;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--pill-radius);
 }
 
 .product-card-body {
@@ -109,15 +125,9 @@ a {
     margin-right: 0.4rem;
 }
 
-.sale-badge {
-    background: var(--color-button);
-    color: var(--color-box);
-    font-size: 0.75rem;
+.price-sale {
+    color: #e74c3c;
     font-weight: 700;
-    text-transform: uppercase;
-    padding: 0.15rem 0.5rem;
-    border-radius: var(--pill-radius);
-    margin-left: 0.5rem;
 }
 
 .product-card-preorder {
@@ -167,6 +177,10 @@ a {
 .product-detail-subtitle {
     opacity: 0.75;
     margin: 0 0 1rem;
+}
+
+.product-detail-media {
+    position: relative;
 }
 
 .product-detail-price {

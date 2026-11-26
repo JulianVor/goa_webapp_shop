@@ -78,6 +78,14 @@ public record MedusaProduct(
                     && original_amount != null
                     && original_amount.compareTo(calculated_amount) > 0;
         }
+
+        /** Rounded percentage off, e.g. 25 for 20.00 -> 15.00. Only meaningful if isOnSale(). */
+        public int discountPercent() {
+            BigDecimal saved = original_amount.subtract(calculated_amount);
+            return saved.multiply(BigDecimal.valueOf(100))
+                    .divide(original_amount, 0, java.math.RoundingMode.HALF_UP)
+                    .intValue();
+        }
     }
 
     /** The lowest-priced variant's price, or null if no variant has one (e.g. no price set yet in Medusa). */
