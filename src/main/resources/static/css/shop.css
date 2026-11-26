@@ -226,6 +226,14 @@ a {
     margin-bottom: 1.5rem;
 }
 
+.flash-error {
+    background: #8a2f2f;
+    color: #fff;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
 /* ---------------------------- Legal pages / maintenance ---------------------------- */
 
 .legal-content {

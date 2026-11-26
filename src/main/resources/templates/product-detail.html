@@ -19,10 +19,14 @@
             <form th:action="@{/warenkorb/hinzufuegen}" method="post" th:if="${not #lists.isEmpty(product.variants())}">
                 <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <select class="variant-select" name="variantId" th:if="${#lists.size(product.variants()) > 1}">
-                    <option th:each="variant : ${product.variants()}" th:value="${variant.id()}" th:text="${variant.title()}">Variante</option>
+                    <option th:each="variant : ${product.variants()}" th:value="${variant.id()}"
+                            th:disabled="${variant.isSoldOut()}"
+                            th:text="${variant.optionLabel()}">Variante</option>
                 </select>
                 <input type="hidden" th:if="${#lists.size(product.variants()) == 1}" name="variantId" th:value="${product.variants()[0].id()}"/>
-                <button type="submit" class="btn">In den Warenkorb</button>
+                <button type="submit" class="btn"
+                        th:disabled="${#lists.size(product.variants()) == 1 and product.variants()[0].isSoldOut()}"
+                        th:text="${#lists.size(product.variants()) == 1 and product.variants()[0].isSoldOut()} ? 'Ausverkauft' : 'In den Warenkorb'">In den Warenkorb</button>
             </form>
             <p th:if="${#lists.isEmpty(product.variants())}">Dieses Produkt ist aktuell nicht bestellbar.</p>
         </div>

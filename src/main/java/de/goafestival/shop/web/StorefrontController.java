@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -84,16 +85,30 @@ public class StorefrontController {
                     .secure(request.isSecure())
                     .build().toString());
         }
-        medusaStoreClient.addLineItem(effectiveCartId, variantId, quantity);
-        redirectAttributes.addFlashAttribute("success", "Zum Warenkorb hinzugefügt.");
+        try {
+            medusaStoreClient.addLineItem(effectiveCartId, variantId, quantity);
+            redirectAttributes.addFlashAttribute("success", "Zum Warenkorb hinzugefügt.");
+        } catch (HttpClientErrorException e) {
+            // Most commonly Medusa's own stock check (confirmInventoryStep) rejecting a
+            // quantity beyond what's actually available - surfaced as a flash message
+            // instead of an uncaught exception/500 page.
+            redirectAttributes.addFlashAttribute("error",
+                    "Die gewünschte Menge ist leider nicht verfügbar. Bitte wähle eine kleinere Menge.");
+        }
         return "redirect:/warenkorb";
     }
 
     @PostMapping("/warenkorb/menge")
     public String updateQuantity(@RequestParam String lineItemId, @RequestParam int quantity,
-                                  @CookieValue(name = CART_COOKIE, required = false) String cartId) {
+                                  @CookieValue(name = CART_COOKIE, required = false) String cartId,
+                                  RedirectAttributes redirectAttributes) {
         if (cartId != null) {
-            medusaStoreClient.updateLineItemQuantity(cartId, lineItemId, quantity);
+            try {
+                medusaStoreClient.updateLineItemQuantity(cartId, lineItemId, quantity);
+            } catch (HttpClientErrorException e) {
+                redirectAttributes.addFlashAttribute("error",
+                        "Die gewünschte Menge ist leider nicht verfügbar. Bitte wähle eine kleinere Menge.");
+            }
         }
         return "redirect:/warenkorb";
     }

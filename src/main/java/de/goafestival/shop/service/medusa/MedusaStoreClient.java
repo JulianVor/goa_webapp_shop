@@ -78,8 +78,9 @@ public class MedusaStoreClient {
                         .queryParam("region_id", region.id())
                         .queryParam("limit", 20)
                         // "+" adds to Medusa's default field set rather than replacing it -
-                        // metadata (used for the preorder feature) isn't returned by default.
-                        .queryParam("fields", "+metadata")
+                        // metadata (preorder feature) and variants.inventory_quantity (stock
+                        // cap on the add-to-cart/quantity form) aren't returned by default.
+                        .queryParam("fields", "+metadata,+variants.inventory_quantity")
                         .build())
                 .retrieve()
                 .body(ProductsResponse.class)
@@ -91,7 +92,7 @@ public class MedusaStoreClient {
         return restClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/store/products/{id}")
                         .queryParam("region_id", region.id())
-                        .queryParam("fields", "+metadata")
+                        .queryParam("fields", "+metadata,+variants.inventory_quantity")
                         .build(productId))
                 .retrieve()
                 .body(ProductResponse.class)

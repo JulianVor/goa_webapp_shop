@@ -28,7 +28,32 @@ public record MedusaProduct(
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Variant(String id, String title, CalculatedPrice calculated_price) {
+    public record Variant(String id, String title, CalculatedPrice calculated_price, Integer inventory_quantity) {
+
+        /**
+         * Null (not zero) means "not stock-managed for this variant" (Medusa only sets this
+         * field for variants with manage_inventory=true - see MedusaStoreClient's
+         * "+variants.inventory_quantity" field request) - i.e. unlimited, nothing to warn
+         * about. Distinct from an actual 0, which does mean sold out.
+         */
+        public boolean isLowStock() {
+            return inventory_quantity != null && inventory_quantity <= 5;
+        }
+
+        public boolean isSoldOut() {
+            return inventory_quantity != null && inventory_quantity <= 0;
+        }
+
+        /** The variant dropdown's option text, with a stock hint appended where relevant. */
+        public String optionLabel() {
+            if (isSoldOut()) {
+                return title + " (ausverkauft)";
+            }
+            if (isLowStock()) {
+                return title + " (nur noch " + inventory_quantity + ")";
+            }
+            return title;
+        }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

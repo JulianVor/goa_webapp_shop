@@ -7,6 +7,7 @@
 <main>
     <h1 class="page-title">Warenkorb</h1>
     <p class="flash-success" th:if="${success}" th:text="${success}"></p>
+    <p class="flash-error" th:if="${error}" th:text="${error}"></p>
 
     <div th:if="${cart == null or #lists.isEmpty(cart.items())}" class="empty-state">
         <p>Dein Warenkorb ist leer.</p>
@@ -20,7 +21,11 @@
             </thead>
             <tbody>
             <tr th:each="item : ${cart.items()}">
-                <td th:text="${item.title()}">Shirt</td>
+                <td>
+                    <span th:text="${item.title()}">Shirt</span>
+                    <span th:if="${item.variant_title() != null and item.variant_title() != 'Default option value'}"
+                          th:text="'(' + ${item.variant_title()} + ')'"> (M)</span>
+                </td>
                 <td>
                     <form th:action="@{/warenkorb/menge}" method="post" class="inline-form">
                         <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
