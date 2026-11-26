@@ -7,6 +7,11 @@
 <main class="admin-main">
     <h1>Einstellungen</h1>
 
+    <nav class="admin-subnav">
+        <a class="active" th:href="@{/admin/settings}">Allgemein</a>
+        <a th:href="@{/admin/settings/bestellbestaetigung}">Bestellbestätigung</a>
+    </nav>
+
     <p class="flash-success" th:if="${success}" th:text="${success}"></p>
 
     <form method="post" class="admin-form" th:action="@{/admin/settings}" th:object="${settingsForm}">

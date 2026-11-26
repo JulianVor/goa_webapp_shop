@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Static branding "shell" for a live preview: Thymeleaf bakes in the real logo/colors
+     server-side, JS only ever swaps the %%CONTENT%% marker on input, so the preview stays
+     accurate without a server round-trip on every keystroke. Mirrors goa_webapp's
+     newsletter-preview-shell, just without the unsubscribe footer (this is a transactional
+     mail, not a marketing one). -->
+<template id="order-confirmation-preview-shell" th:fragment="order-confirmation-preview-shell">
+    <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;border-radius:12px;overflow:hidden;">
+        <div th:style="'background-color:' + ${branding.colorPrimary} + ';padding:0;'">
+            <div style="padding:20px 24px 16px;text-align:center;">
+                <img th:if="${branding.logoImageUrl}" th:src="${branding.logoImageUrl}"
+                     th:alt="${branding.siteTitle}"
+                     th:style="'max-height:64px;display:inline-block;color:' + ${branding.colorSecondary} + ';font-weight:bold;font-family:Arial,Helvetica,sans-serif;'"/>
+                <h1 th:unless="${branding.logoImageUrl}" style="color:#ffffff;margin:0;font-size:20px;"
+                    th:text="${branding.siteTitle}">Festivalshop</h1>
+            </div>
+            <div style="padding:16px 20px 24px;">
+                <div th:style="'background-color:#ffffff;border-radius:12px;padding:24px;color:#222222;font-size:16px;line-height:1.6;border-top:4px solid ' + ${branding.colorAccent} + ';'">%%CONTENT%%</div>
+            </div>
+        </div>
+    </div>
+</template>
+</body>
+</html>

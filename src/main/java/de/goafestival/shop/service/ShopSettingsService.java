@@ -32,4 +32,11 @@ public class ShopSettingsService {
         settings.setContactEmail(form.getContactEmail());
         shopSettingsRepository.save(settings);
     }
+
+    public void updateOrderConfirmationTemplate(String subject, String body) {
+        ShopSettings settings = get();
+        settings.setOrderConfirmationSubject(subject);
+        settings.setOrderConfirmationBody(body);
+        shopSettingsRepository.save(settings);
+    }
 }

@@ -1,5 +1,7 @@
 package de.goafestival.shop.service.mail;
 
+import de.goafestival.shop.domain.ShopSettings;
+import de.goafestival.shop.service.ShopSettingsService;
 import de.goafestival.shop.service.branding.Branding;
 import de.goafestival.shop.service.branding.GoaWebappBrandingClient;
 import de.goafestival.shop.service.medusa.dto.MedusaCompleteCartResult;
@@ -24,6 +26,7 @@ class OrderMailServiceTest {
     private final JavaMailSender mailSender = mock(JavaMailSender.class);
     private final ITemplateEngine templateEngine = mock(ITemplateEngine.class);
     private final GoaWebappBrandingClient brandingClient = mock(GoaWebappBrandingClient.class);
+    private final ShopSettingsService shopSettingsService = mock(ShopSettingsService.class);
 
     @Test
     void doesNothingWithoutMailHostConfigured() {
@@ -31,7 +34,7 @@ class OrderMailServiceTest {
 
         service.sendOrderConfirmation(order());
 
-        verifyNoInteractions(mailSender, templateEngine, brandingClient);
+        verifyNoInteractions(mailSender, templateEngine, brandingClient, shopSettingsService);
     }
 
     @Test
@@ -41,12 +44,13 @@ class OrderMailServiceTest {
         service.sendOrderConfirmation(null);
         service.sendOrderConfirmation(new MedusaCompleteCartResult.Order("order_1", 1001L, null));
 
-        verifyNoInteractions(mailSender, templateEngine, brandingClient);
+        verifyNoInteractions(mailSender, templateEngine, brandingClient, shopSettingsService);
     }
 
     @Test
     void sendsTheConfirmationWhenConfigured() throws Exception {
         OrderMailService service = service("smtp-relay.brevo.com");
+        when(shopSettingsService.get()).thenReturn(new ShopSettings());
         when(brandingClient.current()).thenReturn(fallbackBranding());
         when(templateEngine.process(eq("email/order-confirmation-email"), any())).thenReturn("<html></html>");
         MimeMessage message = new MimeMessage(Session.getDefaultInstance(new Properties()));
@@ -60,8 +64,26 @@ class OrderMailServiceTest {
     }
 
     @Test
+    void usesTheAdminConfiguredSubjectAndSubstitutesTheOrderNumberPlaceholder() throws Exception {
+        OrderMailService service = service("smtp-relay.brevo.com");
+        ShopSettings settings = new ShopSettings();
+        settings.setOrderConfirmationSubject("Danke für Bestellung {{bestellnummer}}!");
+        settings.setOrderConfirmationBody("<p>Nr. {{bestellnummer}}</p>");
+        when(shopSettingsService.get()).thenReturn(settings);
+        when(brandingClient.current()).thenReturn(fallbackBranding());
+        when(templateEngine.process(eq("email/order-confirmation-email"), any())).thenReturn("<html></html>");
+        MimeMessage message = new MimeMessage(Session.getDefaultInstance(new Properties()));
+        when(mailSender.createMimeMessage()).thenReturn(message);
+
+        service.sendOrderConfirmation(order());
+
+        assertEquals("Danke für Bestellung 1001!", message.getSubject());
+    }
+
+    @Test
     void aMailSendFailureIsSwallowedNotPropagated() {
         OrderMailService service = service("smtp-relay.brevo.com");
+        when(shopSettingsService.get()).thenReturn(new ShopSettings());
         when(brandingClient.current()).thenReturn(fallbackBranding());
         when(templateEngine.process(anyString(), any())).thenReturn("<html></html>");
         when(mailSender.createMimeMessage()).thenReturn(new MimeMessage(Session.getDefaultInstance(new Properties())));
@@ -71,7 +93,7 @@ class OrderMailServiceTest {
     }
 
     private OrderMailService service(String mailHost) {
-        return new OrderMailService(mailSender, templateEngine, brandingClient,
+        return new OrderMailService(mailSender, templateEngine, brandingClient, shopSettingsService,
                 "bestellung@example.com", "login@example.com", mailHost);
     }
 

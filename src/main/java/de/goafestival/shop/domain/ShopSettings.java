@@ -37,6 +37,11 @@ public class ShopSettings {
 
     private String contactEmail;
 
+    private String orderConfirmationSubject;
+
+    @Column(columnDefinition = "TEXT")
+    private String orderConfirmationBody;
+
     public Long getId() {
         return id;
     }
@@ -91,5 +96,21 @@ public class ShopSettings {
 
     public void setContactEmail(String contactEmail) {
         this.contactEmail = contactEmail;
+    }
+
+    public String getOrderConfirmationSubject() {
+        return orderConfirmationSubject;
+    }
+
+    public void setOrderConfirmationSubject(String orderConfirmationSubject) {
+        this.orderConfirmationSubject = orderConfirmationSubject;
+    }
+
+    public String getOrderConfirmationBody() {
+        return orderConfirmationBody;
+    }
+
+    public void setOrderConfirmationBody(String orderConfirmationBody) {
+        this.orderConfirmationBody = orderConfirmationBody;
     }
 }
