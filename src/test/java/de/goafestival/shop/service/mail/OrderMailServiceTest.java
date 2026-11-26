@@ -45,7 +45,7 @@ class OrderMailServiceTest {
 
         service.sendOrderConfirmation(null);
         service.sendOrderConfirmation(new MedusaCompleteCartResult.Order(
-                "order_1", 1001L, null, BigDecimal.TEN, "eur", List.of()));
+                "order_1", 1001L, null, BigDecimal.TEN, BigDecimal.ZERO, "eur", List.of()));
 
         verifyNoInteractions(mailSender, templateEngine, brandingClient, shopSettingsService);
     }
@@ -132,15 +132,15 @@ class OrderMailServiceTest {
     }
 
     private static MedusaCompleteCartResult.Order order() {
-        return new MedusaCompleteCartResult.Order(
-                "order_1", 1001L, "test@example.com", new BigDecimal("19.99"), "eur", List.of());
+        return new MedusaCompleteCartResult.Order("order_1", 1001L, "test@example.com",
+                new BigDecimal("19.99"), new BigDecimal("4.99"), "eur", List.of());
     }
 
     private static MedusaCompleteCartResult.Order orderWithItems() {
         MedusaCompleteCartResult.OrderItem item = new MedusaCompleteCartResult.OrderItem(
                 "Festival-Shirt", "M", BigDecimal.ONE, new BigDecimal("15.00"), new BigDecimal("15.00"));
-        return new MedusaCompleteCartResult.Order(
-                "order_1", 1001L, "test@example.com", new BigDecimal("19.99"), "eur", List.of(item));
+        return new MedusaCompleteCartResult.Order("order_1", 1001L, "test@example.com",
+                new BigDecimal("19.99"), new BigDecimal("4.99"), "eur", List.of(item));
     }
 
     private static Branding fallbackBranding() {

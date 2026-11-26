@@ -136,6 +136,7 @@ public class OrderMailService {
         Context context = new Context();
         context.setVariable("items", order.items());
         context.setVariable("currency", order.currency_code());
+        context.setVariable("shippingTotal", order.shipping_total());
         context.setVariable("total", order.total());
         context.setVariable("colorAccent", branding.colorAccent());
         return templateEngine.process("email/order-items-table", context);
@@ -157,6 +158,6 @@ public class OrderMailService {
         MedusaCompleteCartResult.OrderItem item = new MedusaCompleteCartResult.OrderItem(
                 "Festival-Shirt", "M", BigDecimal.ONE, new BigDecimal("15.00"), new BigDecimal("15.00"));
         return new MedusaCompleteCartResult.Order("order_preview", 1001L, "preview@example.com",
-                new BigDecimal("19.99"), "eur", List.of(item));
+                new BigDecimal("19.99"), new BigDecimal("4.99"), "eur", List.of(item));
     }
 }

@@ -22,9 +22,15 @@
     </tr>
     </tbody>
     <tfoot>
+    <tr th:if="${shippingTotal != null}">
+        <td colspan="2" style="padding:8px 6px;text-align:left;">Versand</td>
+        <td style="padding:8px 6px;text-align:right;">
+            <th:block th:replace="~{fragments/price :: amount(${shippingTotal}, ${currency})}"/>
+        </td>
+    </tr>
     <tr>
-        <td colspan="2" style="padding:8px 6px;font-weight:700;text-align:left;">Gesamt</td>
-        <td style="padding:8px 6px;font-weight:700;text-align:right;">
+        <td colspan="2" th:style="'padding:8px 6px;font-weight:700;text-align:left;border-top:2px solid ' + ${colorAccent} + ';'">Gesamt</td>
+        <td th:style="'padding:8px 6px;font-weight:700;text-align:right;border-top:2px solid ' + ${colorAccent} + ';'">
             <th:block th:replace="~{fragments/price :: amount(${total}, ${currency})}"/>
         </td>
     </tr>

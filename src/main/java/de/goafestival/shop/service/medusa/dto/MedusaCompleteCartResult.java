@@ -20,8 +20,8 @@ public record MedusaCompleteCartResult(String type, MedusaCart cart, Order order
      * "currency_code", so all of this comes back without asking for it explicitly.
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Order(String id, Long display_id, String email, BigDecimal total, String currency_code,
-                         List<OrderItem> items) {
+    public record Order(String id, Long display_id, String email, BigDecimal total, BigDecimal shipping_total,
+                         String currency_code, List<OrderItem> items) {
     }
 
     /** A single order line - same title/variant_title convention as MedusaCart.LineItem. */

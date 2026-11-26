@@ -182,7 +182,8 @@ genauso für `SHOP_DB_USER`/`SHOP_DB_NAME`.
   Rich-Text-Editor + Live-Vorschau editierbar wie goa_webapp's Newsletter-
   Bestätigungsmail (inkl. Hintergrundbild der aktuellen Edition, sofern gesetzt);
   `{{bestellnummer}}` wird durch die Bestellnummer ersetzt, `{{bestellungen}}` durch
-  eine Tabelle mit den bestellten Artikeln, Mengen, Preisen und der Gesamtsumme.
+  eine Tabelle mit den bestellten Artikeln, Mengen und Preisen, separat ausgewiesenen
+  Versandkosten und der Gesamtsumme.
 - **Produkte anlegen**: passiert ausschließlich im Medusa Admin Dashboard, nicht hier.
 - Wartungsmodus ist standardmäßig **an** - im eigenen Admin-Bereich ausschalten, sobald
   Produkte in Medusa stehen.
