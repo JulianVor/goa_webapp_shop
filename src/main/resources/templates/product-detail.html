@@ -11,6 +11,11 @@
             <h1 class="product-detail-title" th:text="${product.title()}">Produktname</h1>
             <p class="product-detail-description" th:if="${product.description()}" th:text="${product.description()}">Beschreibung</p>
 
+            <p class="preorder-notice" th:if="${product.isPreorder()}">
+                Vorbestellung – Annahmeschluss: <strong th:text="${product.preorderDeadlineFormatted()}">01.01.2027 um 00:00 Uhr</strong>
+                <span th:if="${product.isPickupOnly()}"> · Nur Abholung, kein Versand</span>
+            </p>
+
             <form th:action="@{/warenkorb/hinzufuegen}" method="post" th:if="${not #lists.isEmpty(product.variants())}">
                 <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <select class="variant-select" name="variantId" th:if="${#lists.size(product.variants()) > 1}">

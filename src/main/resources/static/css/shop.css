@@ -96,6 +96,12 @@ a {
     font-weight: 600;
 }
 
+.product-card-preorder {
+    color: var(--color-accent);
+    font-size: 0.85rem;
+    margin: 0.2rem 0 0;
+}
+
 .empty-state {
     opacity: 0.75;
     padding: 3rem 0;
@@ -130,6 +136,13 @@ a {
 
 .product-detail-description {
     line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.preorder-notice {
+    background: var(--color-accent-box);
+    border-radius: var(--box-radius);
+    padding: 0.8rem 1rem;
     margin-bottom: 1.5rem;
 }
 

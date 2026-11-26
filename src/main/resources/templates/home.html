@@ -19,6 +19,9 @@
                 <h2 class="product-card-title" th:text="${product.title()}">Produktname</h2>
                 <p class="product-card-price" th:if="${product.lowestPrice() != null}"
                    th:text="${#numbers.formatDecimal(product.lowestPrice().calculated_amount(), 1, 2)} + ' ' + ${product.lowestPrice().currency_code().toUpperCase()}">29,99 EUR</p>
+                <p class="product-card-preorder" th:if="${product.isPreorder()}">
+                    Vorbestellung bis <span th:text="${product.preorderDeadlineFormatted()}">01.01.2027</span>
+                </p>
             </div>
         </a>
     </div>

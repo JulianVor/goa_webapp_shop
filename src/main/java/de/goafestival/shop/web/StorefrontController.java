@@ -5,6 +5,7 @@ import de.goafestival.shop.service.medusa.dto.MedusaCart;
 import de.goafestival.shop.service.medusa.dto.MedusaProduct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,7 +14,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 /**
  * The public storefront: product list/detail and a session-cookie-based cart, both
@@ -33,13 +37,24 @@ public class StorefrontController {
 
     @GetMapping("/")
     public String home(Model model) {
-        model.addAttribute("products", medusaStoreClient.listProducts());
+        List<MedusaProduct> products = medusaStoreClient.listProducts().stream()
+                .filter(product -> !product.isPreorderExpired())
+                .toList();
+        model.addAttribute("products", products);
         return "home";
     }
 
+    /**
+     * A preorder item past its deadline is treated as gone, not just unorderable - 404
+     * rather than rendering the page, so a shared/bookmarked link doesn't linger as a dead
+     * end that still shows an (uncompletable) order form.
+     */
     @GetMapping("/produkte/{id}")
     public String productDetail(@PathVariable String id, Model model) {
         MedusaProduct product = medusaStoreClient.getProduct(id);
+        if (product.isPreorderExpired()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vorbestellfrist abgelaufen");
+        }
         model.addAttribute("product", product);
         return "product-detail";
     }
