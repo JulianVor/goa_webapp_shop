@@ -53,9 +53,13 @@ am jeweiligen Produkt unter **Metadata** folgende Keys setzen:
   Shipping Option anlegen, z.B. "Abholung beim Festival", Preis 0 €). Der Checkout
   erkennt automatisch, wenn ein Warenkorb Artikel aus mehreren Shipping Profiles enthält
   (z.B. ein Abhol-Artikel zusammen mit einem Versand-Artikel) und lässt pro Profile eine
-  eigene Versandart wählen (siehe CheckoutController.shippingGroups). Ohne eigenes
-  Shipping Profile bleibt ein `pickup_only`-Produkt im Standard-Profile und wird ganz
-  normal mit Versandkosten berechnet - das Metadata-Feld allein reicht dafür nicht.
+  eigene Versandart wählen (siehe `ShippingGrouping`). Ohne eigenes Shipping Profile
+  bleibt ein `pickup_only`-Produkt im Standard-Profile und wird ganz normal mit
+  Versandkosten berechnet - das Metadata-Feld allein reicht dafür nicht. Unter
+  **Admin → Versand testen** lässt sich das direkt prüfen: Produkte auswählen zeigt, in
+  welche Versand-Gruppe(n) sie fallen und was sie kosten würden - ohne eine echte
+  Bestellung anzulegen. Taucht ein `pickup_only`-Produkt dort in derselben Gruppe wie ein
+  normales Versand-Produkt auf, ist die Shipping-Profile-Zuordnung in Medusa noch falsch.
 - Nach Ablauf von `preorder_deadline` verschwindet das Produkt automatisch aus der
   Übersicht und die Detailseite liefert 404 - keine manuelle Aktion nötig.
 - Ein Produkt ohne `preorder: true` ist komplett unbeeinflusst - normaler Lagerartikel.

@@ -2,6 +2,7 @@ package de.goafestival.shop.web;
 
 import de.goafestival.shop.service.mail.OrderMailService;
 import de.goafestival.shop.service.medusa.MedusaStoreClient;
+import de.goafestival.shop.service.medusa.ShippingGrouping;
 import de.goafestival.shop.service.medusa.StripeProperties;
 import de.goafestival.shop.service.medusa.dto.MedusaCart;
 import de.goafestival.shop.service.medusa.dto.MedusaCompleteCartResult;
@@ -23,12 +24,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -82,9 +80,9 @@ public class CheckoutController {
         }
 
         List<MedusaShippingOption> allOptions = medusaStoreClient.listShippingOptions(cartId);
-        List<ShippingGroup> shippingGroups = shippingGroups(cart, allOptions);
-        Set<String> requiredProfileIds = shippingGroups.stream().map(ShippingGroup::profileId).collect(Collectors.toSet());
-        Set<String> selectedProfileIds = selectedShippingProfileIds(cart, allOptions);
+        List<ShippingGrouping.Group> shippingGroups = ShippingGrouping.of(cart, allOptions);
+        Set<String> requiredProfileIds = shippingGroups.stream().map(ShippingGrouping.Group::profileId).collect(Collectors.toSet());
+        Set<String> selectedProfileIds = ShippingGrouping.selectedProfileIds(cart, allOptions);
         if (!selectedProfileIds.containsAll(requiredProfileIds)) {
             boolean allGroupsHaveOptions = shippingGroups.stream().noneMatch(g -> g.options().isEmpty());
             model.addAttribute("shippingGroups", shippingGroups);
@@ -107,59 +105,6 @@ public class CheckoutController {
         model.addAttribute("stripePublishableKey", stripeProperties.getPublishableKey());
         model.addAttribute("step", "payment");
         return "checkout";
-    }
-
-    /**
-     * One radio-button group per distinct Medusa Shipping Profile represented among the
-     * cart's items (e.g. a "pickup only" festival item and a regular mailed item belong to
-     * different profiles and need their own shipping method each) - see
-     * MedusaCart.LineItem.shippingProfileId(). The common case (everything in the cart shares
-     * one profile) is just a list of exactly one group, same as before this existed.
-     */
-    private record ShippingGroup(String profileId, String profileName, List<String> itemTitles,
-                                  List<MedusaShippingOption> options, String selectedOptionId) {
-    }
-
-    private List<ShippingGroup> shippingGroups(MedusaCart cart, List<MedusaShippingOption> allOptions) {
-        Map<String, String> profileNames = new LinkedHashMap<>();
-        Map<String, List<String>> itemTitlesByProfile = new LinkedHashMap<>();
-        for (MedusaCart.LineItem item : cart.items()) {
-            String profileId = item.shippingProfileId();
-            if (profileId == null) {
-                continue;
-            }
-            profileNames.putIfAbsent(profileId, item.shippingProfileName());
-            itemTitlesByProfile.computeIfAbsent(profileId, id -> new ArrayList<>()).add(item.title());
-        }
-        Map<String, String> optionIdToProfileId = allOptions.stream()
-                .collect(Collectors.toMap(MedusaShippingOption::id, MedusaShippingOption::shipping_profile_id));
-        List<ShippingGroup> groups = new ArrayList<>();
-        for (Map.Entry<String, String> entry : profileNames.entrySet()) {
-            String profileId = entry.getKey();
-            List<MedusaShippingOption> options = allOptions.stream()
-                    .filter(o -> profileId.equals(o.shipping_profile_id()))
-                    .toList();
-            String selected = cart.shipping_methods() == null ? null : cart.shipping_methods().stream()
-                    .filter(sm -> profileId.equals(optionIdToProfileId.get(sm.shipping_option_id())))
-                    .map(MedusaCart.ShippingMethod::shipping_option_id)
-                    .findFirst()
-                    .orElse(null);
-            groups.add(new ShippingGroup(profileId, entry.getValue(), itemTitlesByProfile.get(profileId), options, selected));
-        }
-        return groups;
-    }
-
-    /** Which of the cart's required shipping profiles already have a method selected for them. */
-    private Set<String> selectedShippingProfileIds(MedusaCart cart, List<MedusaShippingOption> allOptions) {
-        if (cart.shipping_methods() == null) {
-            return Set.of();
-        }
-        Map<String, String> optionIdToProfileId = allOptions.stream()
-                .collect(Collectors.toMap(MedusaShippingOption::id, MedusaShippingOption::shipping_profile_id));
-        return cart.shipping_methods().stream()
-                .map(sm -> optionIdToProfileId.get(sm.shipping_option_id()))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
     }
 
     /**
