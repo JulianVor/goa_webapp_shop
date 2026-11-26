@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="de" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head('Kasse')}"></head>
+<head th:replace="~{fragments/head :: head('Kasse – Festivalshop')}"></head>
 <body>
-<div class="page-bg"></div>
+<div class="page-bg" aria-hidden="true"></div>
 <div th:replace="~{fragments/nav :: nav}"></div>
-<main>
-    <h1 class="page-title">Kasse</h1>
-    <p class="flash-error" th:if="${error}" th:text="${error}"></p>
+<main class="shop-panel reading-panel">
+    <a class="back-link" th:href="@{/warenkorb}">Warenkorb</a>
+    <h1>Kasse</h1>
+    <p class="flash-error" role="alert" th:if="${error}" th:text="${error}"></p>
 
     <form th:if="${step == 'address'}" th:action="@{/kasse/adresse}" method="post" class="checkout-form">
         <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
@@ -44,8 +45,9 @@
         <label class="shipping-option" th:each="option : ${shippingOptions}">
             <input type="radio" name="shippingOptionId" th:value="${option.id()}" required="required"/>
             <span th:text="${option.name()}">Versand</span>
-            <span th:if="${option.price() != null}"
-                  th:text="${#numbers.formatDecimal(option.price(), 1, 2)} + ' ' + ${cart.currency_code().toUpperCase()}">0,00 EUR</span>
+            <span th:if="${option.price() != null}">
+                <th:block th:replace="~{fragments/price :: amount(${option.price()}, ${cart.currency_code()})}"/>
+            </span>
         </label>
         <p th:if="${#lists.isEmpty(shippingOptions)}">Aktuell ist keine Versandart konfiguriert - bitte kontaktiere uns.</p>
         <button type="submit" class="btn" th:disabled="${#lists.isEmpty(shippingOptions)}">Weiter zur Zahlung</button>
@@ -55,17 +57,17 @@
         <h2>Zahlung</h2>
         <p>
             Gesamtsumme:
-            <strong th:text="${#numbers.formatDecimal(cart.total(), 1, 2)} + ' ' + ${cart.currency_code().toUpperCase()}">0,00 EUR</strong>
+            <strong><th:block th:replace="~{fragments/price :: amount(${cart.total()}, ${cart.currency_code()})}"/></strong>
         </p>
 
-        <p class="flash-error" th:if="${clientSecret == null}">
+        <p class="flash-error" role="alert" th:if="${clientSecret == null}">
             Die Zahlung kann aktuell nicht gestartet werden - bitte versuche es später erneut oder
             <a th:href="@{/impressum}">kontaktiere uns</a>.
         </p>
 
         <form th:if="${clientSecret != null}" id="payment-form">
             <div id="payment-element"></div>
-            <div id="payment-message" class="flash-error" style="display:none;"></div>
+            <div id="payment-message" class="flash-error" style="display:none;" role="alert"></div>
             <button type="submit" class="btn" id="submit-payment">Jetzt bezahlen</button>
         </form>
 

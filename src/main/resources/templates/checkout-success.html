@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="de" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head('Bestellung abgeschlossen')}"></head>
+<head th:replace="~{fragments/head :: head('Bestellung abgeschlossen – Festivalshop')}"></head>
 <body>
-<div class="page-bg"></div>
+<div class="page-bg" aria-hidden="true"></div>
 <div th:replace="~{fragments/nav :: nav}"></div>
-<main>
-    <h1 class="page-title">Danke für deine Bestellung!</h1>
+<main class="shop-panel reading-panel">
+    <h1>Danke für deine Bestellung!</h1>
     <p th:if="${order != null}">
         Deine Bestellnummer: <strong th:text="${order.display_id()}">1001</strong>
     </p>

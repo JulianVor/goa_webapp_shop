@@ -19,6 +19,7 @@ public record MedusaProduct(
         String thumbnail,
         List<Image> images,
         List<Variant> variants,
+        List<Option> options,
         Map<String, Object> metadata) {
 
     private static final DateTimeFormatter PREORDER_DEADLINE_FORMAT =
@@ -26,6 +27,24 @@ public record MedusaProduct(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Image(String url) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Option(String title) {
+    }
+
+    public String imageForCard() {
+        if (thumbnail != null && !thumbnail.isBlank()) return thumbnail;
+        return images == null || images.isEmpty() ? null : images.get(0).url();
+    }
+
+    public String variantLabel() {
+        return options != null && options.size() == 1 && options.get(0).title() != null
+                ? options.get(0).title() : "Variante";
+    }
+
+    public boolean isSoldOut() {
+        return variants != null && !variants.isEmpty() && variants.stream().allMatch(Variant::isSoldOut);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -48,15 +67,9 @@ public record MedusaProduct(
             return !Boolean.TRUE.equals(allow_backorder) && inventory_quantity != null && inventory_quantity <= 0;
         }
 
-        /** The variant dropdown's option text, with a stock hint appended where relevant. */
-        public String optionLabel() {
-            if (isSoldOut()) {
-                return title + " (ausverkauft)";
-            }
-            if (isLowStock()) {
-                return title + " (nur noch " + inventory_quantity + ")";
-            }
-            return title;
+        public boolean hasDisplayTitle() {
+            return title != null && !title.isBlank() && !"Default option value".equalsIgnoreCase(title)
+                    && !"Default variant".equalsIgnoreCase(title);
         }
     }
 
@@ -74,7 +87,7 @@ public record MedusaProduct(
          * discount, so that flag alone isn't enough to label something "Sale".
          */
         public boolean isOnSale() {
-            return Boolean.TRUE.equals(is_calculated_price_price_list)
+            return calculated_amount != null && Boolean.TRUE.equals(is_calculated_price_price_list)
                     && original_amount != null
                     && original_amount.compareTo(calculated_amount) > 0;
         }
@@ -88,16 +101,29 @@ public record MedusaProduct(
         }
     }
 
-    /** The lowest-priced variant's price, or null if no variant has one (e.g. no price set yet in Medusa). */
+    /** Use orderable variants for the advertised price while any are available. */
     public CalculatedPrice lowestPrice() {
         if (variants == null) {
             return null;
         }
+        boolean soldOut = isSoldOut();
         return variants.stream()
+                .filter(variant -> soldOut || !variant.isSoldOut())
                 .map(Variant::calculated_price)
                 .filter(p -> p != null && p.calculated_amount() != null)
                 .min((a, b) -> a.calculated_amount().compareTo(b.calculated_amount()))
                 .orElse(null);
+    }
+
+    public boolean hasPriceRange() {
+        CalculatedPrice lowest = lowestPrice();
+        if (lowest == null) return false;
+        boolean soldOut = isSoldOut();
+        return variants.stream()
+                .filter(variant -> soldOut || !variant.isSoldOut())
+                .map(Variant::calculated_price)
+                .anyMatch(price -> price != null && price.calculated_amount() != null
+                        && price.calculated_amount().compareTo(lowest.calculated_amount()) > 0);
     }
 
     /**

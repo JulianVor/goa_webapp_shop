@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,6 +44,14 @@ public class CheckoutController {
     public CheckoutController(MedusaStoreClient medusaStoreClient, StripeProperties stripeProperties) {
         this.medusaStoreClient = medusaStoreClient;
         this.stripeProperties = stripeProperties;
+    }
+
+    // fragments/nav's bag-count badge needs this on every page - including checkout-success/
+    // -failed, which don't otherwise put a "cart" attribute in the model at all (see
+    // StorefrontController's identical method for the full reasoning).
+    @ModelAttribute("hasCartCookie")
+    public boolean hasCartCookie(@CookieValue(name = CartCookie.NAME, required = false) String cartId) {
+        return cartId != null;
     }
 
     @GetMapping

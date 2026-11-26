@@ -30,7 +30,7 @@ public class MedusaStoreClient {
     private final RestClient restClient;
     private final MedusaProperties properties;
 
-    /** Resolved once and reused - a festival fanshop doesn't need per-request region lookups. */
+    /** Resolved once and reused - a festival shop doesn't need per-request region lookups. */
     private volatile MedusaRegion cachedDefaultRegion;
 
     public MedusaStoreClient(MedusaProperties properties) {

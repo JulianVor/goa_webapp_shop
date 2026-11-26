@@ -5,12 +5,15 @@ import de.goafestival.shop.service.medusa.dto.MedusaCart;
 import de.goafestival.shop.service.medusa.dto.MedusaProduct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,11 +21,11 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 /**
  * The public storefront: product list/detail and a session-cookie-based cart, both
@@ -40,10 +43,29 @@ public class StorefrontController {
         this.medusaStoreClient = medusaStoreClient;
     }
 
+    @ModelAttribute("hasCartCookie")
+    public boolean hasCartCookie(@CookieValue(name = CART_COOKIE, required = false) String cartId) {
+        return cartId != null;
+    }
+
+    @GetMapping("/warenkorb/anzahl")
+    public ResponseEntity<Integer> cartCount(@CookieValue(name = CART_COOKIE, required = false) String cartId) {
+        int count = 0;
+        if (cartId != null) {
+            try {
+                count = medusaStoreClient.getCart(cartId).itemCount();
+            } catch (HttpClientErrorException.NotFound ignored) {
+                // The visitor's cookie can outlive the cart in Medusa.
+            }
+        }
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(count);
+    }
+
     @GetMapping("/")
     public String home(Model model) {
         List<MedusaProduct> products = medusaStoreClient.listProducts().stream()
                 .filter(product -> !product.isPreorderExpired())
+                .sorted(Comparator.comparing(MedusaProduct::isPreorder).reversed())
                 .toList();
         model.addAttribute("products", products);
         return "home";
@@ -68,7 +90,7 @@ public class StorefrontController {
     public String cart(@CookieValue(name = CART_COOKIE, required = false) String cartId, Model model) {
         MedusaCart cart = cartId != null ? medusaStoreClient.getCart(cartId) : null;
         model.addAttribute("cart", cart);
-        model.addAttribute("maxQuantities", maxQuantitiesByLineItem(cart));
+        addCartProductDetails(cart, model);
         return "cart";
     }
 
@@ -79,29 +101,27 @@ public class StorefrontController {
      * rejected request. Null (no entry in the map) means no cap - either not stock-managed
      * or backorders are allowed for that variant.
      */
-    private Map<String, Integer> maxQuantitiesByLineItem(MedusaCart cart) {
-        if (cart == null || cart.items() == null || cart.items().isEmpty()) {
-            return Map.of();
-        }
-        Set<String> productIds = cart.items().stream()
-                .map(MedusaCart.LineItem::product_id)
-                .filter(id -> id != null)
-                .collect(Collectors.toSet());
-        Map<String, MedusaProduct.Variant> variantsById = new HashMap<>();
-        for (String productId : productIds) {
-            MedusaProduct product = medusaStoreClient.getProduct(productId);
-            if (product.variants() != null) {
-                product.variants().forEach(v -> variantsById.put(v.id(), v));
-            }
-        }
-        Map<String, Integer> result = new HashMap<>();
+    private void addCartProductDetails(MedusaCart cart, Model model) {
+        Map<String, MedusaProduct> products = new HashMap<>();
+        Map<String, Integer> maxQuantities = new HashMap<>();
+        model.addAttribute("cartProducts", products);
+        model.addAttribute("maxQuantities", maxQuantities);
+        if (cart == null || cart.items() == null) return;
+
         for (MedusaCart.LineItem item : cart.items()) {
-            MedusaProduct.Variant variant = variantsById.get(item.variant_id());
-            if (variant != null && !Boolean.TRUE.equals(variant.allow_backorder()) && variant.inventory_quantity() != null) {
-                result.put(item.id(), variant.inventory_quantity());
+            if (item.product_id() == null) continue;
+            try {
+                MedusaProduct product = products.computeIfAbsent(item.product_id(), medusaStoreClient::getProduct);
+                if (product.variants() == null) continue;
+                product.variants().stream()
+                        .filter(variant -> variant.id().equals(item.variant_id()) && !Boolean.TRUE.equals(variant.allow_backorder()))
+                        .map(MedusaProduct.Variant::inventory_quantity)
+                        .filter(Objects::nonNull)
+                        .findFirst().ifPresent(quantity -> maxQuantities.put(item.id(), quantity));
+            } catch (HttpClientErrorException.NotFound ignored) {
+                // An unpublished product must still be removable from an existing cart.
             }
         }
-        return result;
     }
 
     @PostMapping("/warenkorb/hinzufuegen")

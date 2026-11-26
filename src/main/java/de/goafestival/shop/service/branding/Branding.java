@@ -36,7 +36,7 @@ public record Branding(
      */
     static Branding fallback() {
         return new Branding(
-                "GOA Fanshop", null, null, null,
+                "GOA Festivalshop", null, null, null,
                 "#2f6f68", "#e0559a", "#f2c14e",
                 "#2f6f68", "#2f6f68", "#f2c14e", "#f2c14e", "#2f6f68", "#f2c14e",
                 "20px", "999px",

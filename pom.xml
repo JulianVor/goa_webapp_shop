@@ -15,7 +15,7 @@
     <artifactId>goa-webapp-shop</artifactId>
     <version>0.1.0</version>
     <name>goa-webapp-shop</name>
-    <description>Grumbrechtstraßen Open Air (GOA) Festival Fanshop - Thymeleaf storefront in front of a Medusa.js commerce backend</description>
+    <description>Grumbrechtstraßen Open Air (GOA) Festivalshop - Thymeleaf storefront in front of a Medusa.js commerce backend</description>
 
     <properties>
         <java.version>21</java.version>

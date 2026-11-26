@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-<nav class="site-nav" th:fragment="nav">
-    <a class="brand" th:href="@{/}">
-        <img th:if="${branding.logoImageUrl}" th:src="${branding.logoImageUrl}" alt="Logo"/>
-        <span th:unless="${branding.logoImageUrl}">GOA Fanshop</span>
+<nav class="site-nav" aria-label="Hauptnavigation" th:fragment="nav">
+    <a class="brand" th:href="@{/}" aria-label="Festivalshop – alle Produkte">
+        <img th:if="${branding.logoImageUrl}" th:src="${branding.logoImageUrl}" alt=""/>
+        <span th:unless="${branding.logoImageUrl}">Festivalshop</span>
     </a>
-    <div class="nav-links">
-        <a class="pill" th:href="@{/}">Produkte</a>
-        <a class="pill" th:href="@{/warenkorb}">Warenkorb</a>
-        <a class="pill" th:href="@{https://heimfeld.life}">Zum Festival ↗</a>
+    <div class="shop-nav-links">
+        <a class="festival-link" href="https://heimfeld.life">Zum Festival</a>
+        <a class="btn" th:href="@{/warenkorb}">Warenkorb
+            <span class="bag-count" th:hidden="${cart == null and hasCartCookie}"
+                  th:attr="data-count-url=@{/warenkorb/anzahl}"
+                  th:text="${cart != null ? cart.itemCount() : 0}">0</span>
+        </a>
     </div>
 </nav>
 </body>

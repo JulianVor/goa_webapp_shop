@@ -21,6 +21,10 @@ public record MedusaCart(
         BigDecimal tax_total,
         BigDecimal total) {
 
+    public int itemCount() {
+        return items == null ? 0 : items.stream().mapToInt(LineItem::quantity).sum();
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record LineItem(
             String id,

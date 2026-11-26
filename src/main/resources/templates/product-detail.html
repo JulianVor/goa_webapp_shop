@@ -1,50 +1,60 @@
 <!DOCTYPE html>
 <html lang="de" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head(${product.title()})}"></head>
+<head th:replace="~{fragments/head :: head(${product.title() + ' – Festivalshop'})}"></head>
 <body>
-<div class="page-bg"></div>
+<div class="page-bg" aria-hidden="true"></div>
 <div th:replace="~{fragments/nav :: nav}"></div>
-<main>
+<main class="shop-panel product-page" th:with="variants=${product.variants()}, single=${variants != null and variants.size() == 1}">
+    <a class="back-link" th:href="@{/}">Alle Produkte</a>
     <div class="product-detail">
-        <div class="product-detail-media">
-            <span class="discount-badge" th:if="${product.lowestPrice() != null and product.lowestPrice().isOnSale()}"
-                  th:text="'-' + ${product.lowestPrice().discountPercent()} + '%'">-25%</span>
-            <div class="product-gallery" th:if="${not #lists.isEmpty(product.images())}">
-                <img class="product-detail-image" th:each="image : ${product.images()}" th:src="${image.url()}" th:alt="${product.title()}"/>
+        <div class="gallery" th:with="gallery=${product.images()}, cover=${#lists.isEmpty(gallery) ? product.thumbnail() : gallery[0].url()}">
+            <div class="detail-media">
+                <img th:if="${cover}" id="product-photo" th:src="${cover}" th:alt="${product.title()}"/>
+                <span class="image-missing" th:unless="${cover}">Produktbild folgt</span>
             </div>
-            <img class="product-detail-image" th:if="${#lists.isEmpty(product.images()) and product.thumbnail() != null}"
-                 th:src="${product.thumbnail()}" th:alt="${product.title()}"/>
+            <div class="thumbs" th:if="${gallery != null and gallery.size() > 1}" aria-label="Produktansichten">
+                <a th:each="image, loop : ${gallery}" th:href="${image.url()}"
+                   th:aria-current="${loop.first} ? 'true' : null"
+                   th:aria-label="|Ansicht ${loop.count} von ${loop.size} anzeigen|">
+                    <img th:src="${image.url()}" alt="" loading="lazy"/>
+                </a>
+            </div>
         </div>
-        <div>
-            <h1 class="product-detail-title" th:text="${product.title()}">Produktname</h1>
-            <p class="product-detail-subtitle" th:if="${product.subtitle()}" th:text="${product.subtitle()}">Untertitel</p>
-            <p class="product-detail-price" th:if="${product.lowestPrice() != null}">
-                <span class="price-original" th:if="${product.lowestPrice().isOnSale()}"
-                      th:text="${#numbers.formatDecimal(product.lowestPrice().original_amount(), 1, 2)} + ' ' + ${product.lowestPrice().currency_code().toUpperCase()}">20,00 EUR</span>
-                <span th:classappend="${product.lowestPrice().isOnSale()} ? 'price-sale'"
-                      th:text="${#numbers.formatDecimal(product.lowestPrice().calculated_amount(), 1, 2)} + ' ' + ${product.lowestPrice().currency_code().toUpperCase()}">15,00 EUR</span>
-            </p>
-
-            <p class="product-detail-description" th:if="${product.description()}" th:text="${product.description()}">Beschreibung</p>
-
-            <p class="preorder-notice" th:if="${product.isPreorder()}">
-                Vorbestellung – Annahmeschluss: <strong th:text="${product.preorderDeadlineFormatted()}">01.01.2027 um 00:00 Uhr</strong>
-                <span th:if="${product.isPickupOnly()}"> · Nur Abholung, kein Versand</span>
-            </p>
-
-            <form th:action="@{/warenkorb/hinzufuegen}" method="post" th:if="${not #lists.isEmpty(product.variants())}">
-                <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                <select class="variant-select" name="variantId" th:if="${#lists.size(product.variants()) > 1}">
-                    <option th:each="variant : ${product.variants()}" th:value="${variant.id()}"
-                            th:disabled="${variant.isSoldOut()}"
-                            th:text="${variant.optionLabel()}">Variante</option>
-                </select>
-                <input type="hidden" th:if="${#lists.size(product.variants()) == 1}" name="variantId" th:value="${product.variants()[0].id()}"/>
-                <button type="submit" class="btn"
-                        th:disabled="${#lists.size(product.variants()) == 1 and product.variants()[0].isSoldOut()}"
-                        th:text="${#lists.size(product.variants()) == 1 and product.variants()[0].isSoldOut()} ? 'Ausverkauft' : 'In den Warenkorb'">In den Warenkorb</button>
+        <div class="purchase">
+            <h1 th:text="${product.title()}">Produktname</h1>
+            <div class="detail-price" aria-live="polite" aria-atomic="true">
+                <div id="initial-price"><span th:replace="~{fragments/price :: price(${product.lowestPrice()}, ${product.hasPriceRange()})}"></span></div>
+                <div th:each="variant : ${variants}" th:attr="data-price-for=${variant.id()}" hidden>
+                    <span th:replace="~{fragments/price :: price(${variant.calculated_price()}, false)}"></span>
+                </div>
+            </div>
+            <div class="order-note" th:if="${product.isPreorder() or product.isPickupOnly()}">
+                <strong th:if="${product.isPreorder()}">Vorbestellung<span th:if="${product.preorderDeadline() != null}" th:text="| bis ${product.preorderDeadlineFormatted()}|"></span></strong>
+                <span th:if="${product.isPickupOnly()}">Nur Abholung auf dem Festival</span>
+            </div>
+            <form class="purchase-form" th:unless="${#lists.isEmpty(variants)}" th:action="@{/warenkorb/hinzufuegen}" method="post">
+                <fieldset th:if="${!single or variants[0].hasDisplayTitle()}">
+                    <legend th:text="${product.variantLabel()}">Größe</legend>
+                    <div class="choices">
+                        <label class="choice" th:each="variant : ${variants}">
+                            <input type="radio" name="variantId" required th:value="${variant.id()}"
+                                   th:checked="${single and !variant.isSoldOut()}" th:disabled="${variant.isSoldOut()}"/>
+                            <span class="choice-label">
+                                <strong th:text="${variant.title()}">M</strong>
+                                <small th:if="${variant.isSoldOut()}">Ausverkauft</small>
+                                <small th:if="${!variant.isSoldOut() and variant.isLowStock()}" th:text="|Nur noch ${variant.inventory_quantity()}|"></small>
+                            </span>
+                            <noscript th:if="${product.hasPriceRange()}"><span th:replace="~{fragments/price :: price(${variant.calculated_price()}, false)}"></span></noscript>
+                        </label>
+                    </div>
+                </fieldset>
+                <input th:if="${single and !variants[0].hasDisplayTitle()}" type="hidden" name="variantId" th:value="${variants[0].id()}"/>
+                <button type="submit" class="btn buy" th:disabled="${product.isSoldOut()}"
+                        th:text="${product.isSoldOut() ? 'Ausverkauft' : 'In den Warenkorb'}">In den Warenkorb</button>
             </form>
-            <p th:if="${#lists.isEmpty(product.variants())}">Dieses Produkt ist aktuell nicht bestellbar.</p>
+            <p th:if="${#lists.isEmpty(variants)}">Dieses Produkt ist aktuell nicht bestellbar.</p>
+            <p th:if="${product.subtitle()}" th:text="${product.subtitle()}"></p>
+            <p class="description" th:if="${product.description()}" th:text="${product.description()}"></p>
         </div>
     </div>
 </main>

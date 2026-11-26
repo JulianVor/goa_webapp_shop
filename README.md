@@ -1,6 +1,6 @@
 # goa_webapp_shop
 
-Der öffentliche Fanshop-Storefront für `shop.heimfeld.life` - Spring Boot + Thymeleaf,
+Der öffentliche Festivalshop-Storefront für `shop.heimfeld.life` - Spring Boot + Thymeleaf,
 genau wie [goa_webapp](https://github.com/JulianVor/goa_webapp), aber ohne eigene
 Produktdaten: die kommen vollständig über die Store-API von
 [goa_webapp_shop_admin](https://github.com/JulianVor/goa_webapp_shop_admin) (ein
@@ -26,7 +26,7 @@ Medusa und werden über das **Medusa Admin Dashboard** gepflegt (erreichbar unte
 hier deckt nur ab, was Medusa nicht mitbringt:
 
 - Impressum, AGB, Widerrufsbelehrung, Datenschutzerklärung
-- Wartungsmodus-Schalter ("Fanshop kommt bald" statt Sortiment)
+- Wartungsmodus-Schalter ("Festivalshop kommt bald" statt Sortiment)
 - Kontakt-E-Mail
 
 ## Vorbestellungen (Preorder)
@@ -154,10 +154,14 @@ genauso für `SHOP_DB_USER`/`SHOP_DB_NAME`.
 
 ## Offene Punkte / nächste Schritte
 
-- **Zahlung**: Checkout ist bis zum Warenkorb voll funktionsfähig; die eigentliche
-  Bezahlung (Medusa Payment Collections + Stripe Elements) ist noch nicht angebunden -
-  dafür wird ein echtes Stripe-Konto mit API-Schlüsseln gebraucht. Siehe `/kasse`
-  (`checkout-stub.html`) für den aktuellen Platzhalter.
+- **Zahlung**: `/kasse` führt durch Adresse → Versandart → Zahlung (eingebettetes
+  Stripe Payment Element, siehe `checkout.html`). Die Bestellung wird erst nach
+  erfolgreicher Zahlung angelegt (`/kasse/erfolg`). Publishable Key und Provider-ID
+  kommen aus `STRIPE_PUBLISHABLE_KEY`/`STRIPE_PROVIDER_ID` - der Secret Key liegt nur
+  in `goa_webapp_shop_admin` (`STRIPE_API_KEY`), siehe dessen README für die
+  Webhook-Einrichtung. Versandarten/-zonen müssen im Medusa Admin konfiguriert sein
+  (Settings → Locations → Shipping Options), sonst zeigt der Versand-Schritt keine
+  Optionen an.
 - **Produkte anlegen**: passiert ausschließlich im Medusa Admin Dashboard, nicht hier.
 - Wartungsmodus ist standardmäßig **an** - im eigenen Admin-Bereich ausschalten, sobald
   Produkte in Medusa stehen.
