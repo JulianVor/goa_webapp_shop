@@ -28,20 +28,23 @@ public record MedusaProduct(
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Variant(String id, String title, CalculatedPrice calculated_price, Integer inventory_quantity) {
+    public record Variant(String id, String title, CalculatedPrice calculated_price, Integer inventory_quantity,
+                           Boolean allow_backorder) {
 
         /**
          * Null (not zero) means "not stock-managed for this variant" (Medusa only sets this
          * field for variants with manage_inventory=true - see MedusaStoreClient's
          * "+variants.inventory_quantity" field request) - i.e. unlimited, nothing to warn
-         * about. Distinct from an actual 0, which does mean sold out.
+         * about. Distinct from an actual 0, which does mean sold out - unless backorders are
+         * allowed, in which case 0 (or even negative - already-placed backorders) is normal,
+         * expected, and still orderable, so no stock hint is shown at all.
          */
         public boolean isLowStock() {
-            return inventory_quantity != null && inventory_quantity <= 5;
+            return !Boolean.TRUE.equals(allow_backorder) && inventory_quantity != null && inventory_quantity <= 5;
         }
 
         public boolean isSoldOut() {
-            return inventory_quantity != null && inventory_quantity <= 0;
+            return !Boolean.TRUE.equals(allow_backorder) && inventory_quantity != null && inventory_quantity <= 0;
         }
 
         /** The variant dropdown's option text, with a stock hint appended where relevant. */
