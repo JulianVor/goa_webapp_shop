@@ -29,6 +29,35 @@ hier deckt nur ab, was Medusa nicht mitbringt:
 - Wartungsmodus-Schalter ("Fanshop kommt bald" statt Sortiment)
 - Kontakt-E-Mail
 
+## Vorbestellungen (Preorder)
+
+Für Artikel mit festem Annahmeschluss (z.B. das Festival-Shirt für die nächste Ausgabe) -
+ganz ohne Custom-Code in Medusa, ganz ohne eigenes Datenmodell: im Medusa Admin Dashboard
+am jeweiligen Produkt unter **Metadata** folgende Keys setzen:
+
+```json
+{
+  "preorder": true,
+  "preorder_deadline": "2027-06-01T00:00:00+02:00",
+  "pickup_only": true
+}
+```
+
+- `preorder_deadline` ist ISO-8601 mit Zeitzonen-Offset (siehe Beispiel) - ohne Offset
+  schlägt das Parsen fehl und das Produkt bleibt (absichtlich fail-open) sichtbar.
+- `pickup_only` ist optional, zeigt nur einen Hinweis "Nur Abholung, kein Versand" an -
+  hat sonst keine Auswirkung (kein eigener Versandausschluss in Medusa konfiguriert).
+- Nach Ablauf von `preorder_deadline` verschwindet das Produkt automatisch aus der
+  Übersicht und die Detailseite liefert 404 - keine manuelle Aktion nötig.
+- Ein Produkt ohne `preorder: true` ist komplett unbeeinflusst - normaler Lagerartikel.
+
+Die Prüfung läuft ausschließlich in diesem Storefront (`MedusaProduct.isPreorderExpired()`
+in `StorefrontController`), nicht in Medusa selbst - bewusst, um
+`goa_webapp_shop_admin` als unverändertes `@medusajs/medusa`-Projekt zu erhalten (siehe
+dessen README). Ein direkter API-Call gegen Medusas Store-API am Storefront vorbei würde
+die Deadline nicht kennen - für die Shop-Größe ein akzeptiertes Restrisiko, keine
+Serverseitige Hard-Sperre in Medusa.
+
 ## Styles von goa_webapp
 
 Zwei getrennte Mechanismen, je nachdem wie oft sich die Sache ändert:
