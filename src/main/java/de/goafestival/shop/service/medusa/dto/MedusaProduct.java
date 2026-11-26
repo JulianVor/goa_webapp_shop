@@ -61,7 +61,23 @@ public record MedusaProduct(
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record CalculatedPrice(BigDecimal calculated_amount, String currency_code) {
+    public record CalculatedPrice(
+            BigDecimal calculated_amount,
+            BigDecimal original_amount,
+            Boolean is_calculated_price_price_list,
+            String currency_code) {
+
+        /**
+         * A Price List (e.g. a "sale" type list overriding the default price) is active AND
+         * actually cheaper than the regular price - Medusa still sets
+         * is_calculated_price_price_list for an override-type list even when it isn't a
+         * discount, so that flag alone isn't enough to label something "Sale".
+         */
+        public boolean isOnSale() {
+            return Boolean.TRUE.equals(is_calculated_price_price_list)
+                    && original_amount != null
+                    && original_amount.compareTo(calculated_amount) > 0;
+        }
     }
 
     /** The lowest-priced variant's price, or null if no variant has one (e.g. no price set yet in Medusa). */

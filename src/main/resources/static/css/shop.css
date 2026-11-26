@@ -102,6 +102,24 @@ a {
     font-weight: 600;
 }
 
+.price-original {
+    text-decoration: line-through;
+    opacity: 0.6;
+    font-weight: 400;
+    margin-right: 0.4rem;
+}
+
+.sale-badge {
+    background: var(--color-button);
+    color: var(--color-box);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--pill-radius);
+    margin-left: 0.5rem;
+}
+
 .product-card-preorder {
     color: var(--color-accent);
     font-size: 0.85rem;
@@ -148,6 +166,13 @@ a {
 
 .product-detail-subtitle {
     opacity: 0.75;
+    margin: 0 0 1rem;
+}
+
+.product-detail-price {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--color-text);
     margin: 0 0 1rem;
 }
 
