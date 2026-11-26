@@ -28,8 +28,9 @@
             <legend>Bestellbestätigung</legend>
             <p class="field-hint">
                 Wird automatisch direkt nach jeder erfolgreich bezahlten Bestellung an die beim Checkout
-                angegebene Adresse versendet. Mit <code>{{bestellnummer}}</code> kannst du an jeder Stelle
-                (Betreff und Inhalt) die jeweilige Bestellnummer einfügen.
+                angegebene Adresse versendet. Mit <code>{{bestellnummer}}</code> (Betreff und Inhalt) fügst du
+                die jeweilige Bestellnummer ein, mit <code>{{bestellungen}}</code> (nur Inhalt) eine Tabelle
+                mit den bestellten Artikeln, Mengen, Preisen und der Gesamtsumme.
             </p>
             <label>Betreff<input type="text" th:field="*{subject}" required="required"/></label>
 
@@ -89,11 +90,20 @@
             hiddenField.value = editor.innerHTML;
         }
 
+        // The real item table (fragments/price-formatted, same as the rest of the site) only
+        // ever gets rendered server-side - see the "Vorschau ansehen" exact-preview button
+        // below. This instant, no-round-trip preview just stands a placeholder box in for it.
+        var sampleItemsTable = '<div style="border:1px dashed #999999;border-radius:8px;padding:10px 14px;'
+            + 'color:#666666;font-size:13px;margin:0 0 1.25em;">[Bestellübersicht: Artikel, Menge, Preise, Gesamtsumme]</div>';
+
         function updateLivePreview() {
             var doc = livePreviewFrame.contentDocument;
             if (!doc) return;
+            var content = editor.innerHTML
+                .replace(/\{\{bestellnummer\}\}/g, '1001')
+                .replace(/\{\{bestellungen\}\}/g, sampleItemsTable);
             doc.open();
-            doc.write(previewShellHtml.replace('%%CONTENT%%', editor.innerHTML.replace(/\{\{bestellnummer\}\}/g, '1001')));
+            doc.write(previewShellHtml.replace('%%CONTENT%%', content));
             doc.close();
         }
 

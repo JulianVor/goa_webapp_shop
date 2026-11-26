@@ -16,7 +16,11 @@
                 <h1 th:unless="${branding.logoImageUrl}" style="color:#ffffff;margin:0;font-size:20px;"
                     th:text="${branding.siteTitle}">Festivalshop</h1>
             </div>
-            <div style="padding:16px 20px 24px;">
+            <div th:if="${branding.backgroundImageUrl}"
+                 th:style="'border-radius:20px 20px 0 0;overflow:hidden;background-image:url(' + ${branding.backgroundImageUrl} + ');background-size:cover;background-position:center;background-repeat:no-repeat;padding:16px 20px 24px;'">
+                <div th:style="'background-color:rgba(255,255,255,0.95);border-radius:12px;padding:24px;color:#222222;font-size:16px;line-height:1.6;border-top:4px solid ' + ${branding.colorAccent} + ';'">%%CONTENT%%</div>
+            </div>
+            <div th:unless="${branding.backgroundImageUrl}" style="padding:16px 20px 24px;">
                 <div th:style="'background-color:#ffffff;border-radius:12px;padding:24px;color:#222222;font-size:16px;line-height:1.6;border-top:4px solid ' + ${branding.colorAccent} + ';'">%%CONTENT%%</div>
             </div>
         </div>

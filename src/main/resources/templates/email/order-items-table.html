@@ -1,0 +1,32 @@
+<table xmlns:th="http://www.thymeleaf.org" role="presentation" width="100%" cellpadding="0" cellspacing="0"
+       style="width:100%;border-collapse:collapse;margin:0 0 1.25em;font-family:Arial,Helvetica,sans-serif;font-size:15px;">
+    <thead>
+    <tr>
+        <th th:style="'text-align:left;padding:8px 6px;border-bottom:2px solid ' + ${colorAccent} + ';'">Artikel</th>
+        <th th:style="'text-align:center;padding:8px 6px;border-bottom:2px solid ' + ${colorAccent} + ';'">Menge</th>
+        <th th:style="'text-align:right;padding:8px 6px;border-bottom:2px solid ' + ${colorAccent} + ';'">Preis</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${items}">
+        <td style="padding:8px 6px;border-bottom:1px solid #eeeeee;text-align:left;">
+            <span th:text="${item.title()}">Produktname</span>
+            <span th:if="${item.hasDisplayVariantTitle()}" th:text="'– ' + ${item.variant_title()}"></span>
+        </td>
+        <td style="padding:8px 6px;border-bottom:1px solid #eeeeee;text-align:center;"
+            th:text="${#numbers.formatDecimal(item.quantity(), 1, 0)}">1
+        </td>
+        <td style="padding:8px 6px;border-bottom:1px solid #eeeeee;text-align:right;">
+            <th:block th:replace="~{fragments/price :: amount(${item.total()}, ${currency})}"/>
+        </td>
+    </tr>
+    </tbody>
+    <tfoot>
+    <tr>
+        <td colspan="2" style="padding:8px 6px;font-weight:700;text-align:left;">Gesamt</td>
+        <td style="padding:8px 6px;font-weight:700;text-align:right;">
+            <th:block th:replace="~{fragments/price :: amount(${total}, ${currency})}"/>
+        </td>
+    </tr>
+    </tfoot>
+</table>

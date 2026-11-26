@@ -12,6 +12,8 @@ import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.thymeleaf.ITemplateEngine;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -42,7 +44,8 @@ class OrderMailServiceTest {
         OrderMailService service = service("smtp-relay.brevo.com");
 
         service.sendOrderConfirmation(null);
-        service.sendOrderConfirmation(new MedusaCompleteCartResult.Order("order_1", 1001L, null));
+        service.sendOrderConfirmation(new MedusaCompleteCartResult.Order(
+                "order_1", 1001L, null, BigDecimal.TEN, "eur", List.of()));
 
         verifyNoInteractions(mailSender, templateEngine, brandingClient, shopSettingsService);
     }
@@ -81,6 +84,37 @@ class OrderMailServiceTest {
     }
 
     @Test
+    void rendersTheItemsTableWhenTheOrderHasItems() throws Exception {
+        OrderMailService service = service("smtp-relay.brevo.com");
+        ShopSettings settings = new ShopSettings();
+        settings.setOrderConfirmationBody("<p>{{bestellungen}}</p>");
+        when(shopSettingsService.get()).thenReturn(settings);
+        when(brandingClient.current()).thenReturn(fallbackBranding());
+        when(templateEngine.process(eq("email/order-items-table"), any())).thenReturn("<table>rows</table>");
+        when(templateEngine.process(eq("email/order-confirmation-email"), any())).thenReturn("<html></html>");
+        when(mailSender.createMimeMessage()).thenReturn(new MimeMessage(Session.getDefaultInstance(new Properties())));
+
+        service.sendOrderConfirmation(orderWithItems());
+
+        verify(templateEngine).process(eq("email/order-items-table"), any());
+    }
+
+    @Test
+    void skipsTheItemsTableWhenTheOrderHasNoItems() throws Exception {
+        OrderMailService service = service("smtp-relay.brevo.com");
+        ShopSettings settings = new ShopSettings();
+        settings.setOrderConfirmationBody("<p>{{bestellungen}}</p>");
+        when(shopSettingsService.get()).thenReturn(settings);
+        when(brandingClient.current()).thenReturn(fallbackBranding());
+        when(templateEngine.process(eq("email/order-confirmation-email"), any())).thenReturn("<html></html>");
+        when(mailSender.createMimeMessage()).thenReturn(new MimeMessage(Session.getDefaultInstance(new Properties())));
+
+        service.sendOrderConfirmation(order());
+
+        verify(templateEngine, never()).process(eq("email/order-items-table"), any());
+    }
+
+    @Test
     void aMailSendFailureIsSwallowedNotPropagated() {
         OrderMailService service = service("smtp-relay.brevo.com");
         when(shopSettingsService.get()).thenReturn(new ShopSettings());
@@ -98,7 +132,15 @@ class OrderMailServiceTest {
     }
 
     private static MedusaCompleteCartResult.Order order() {
-        return new MedusaCompleteCartResult.Order("order_1", 1001L, "test@example.com");
+        return new MedusaCompleteCartResult.Order(
+                "order_1", 1001L, "test@example.com", new BigDecimal("19.99"), "eur", List.of());
+    }
+
+    private static MedusaCompleteCartResult.Order orderWithItems() {
+        MedusaCompleteCartResult.OrderItem item = new MedusaCompleteCartResult.OrderItem(
+                "Festival-Shirt", "M", BigDecimal.ONE, new BigDecimal("15.00"), new BigDecimal("15.00"));
+        return new MedusaCompleteCartResult.Order(
+                "order_1", 1001L, "test@example.com", new BigDecimal("19.99"), "eur", List.of(item));
     }
 
     private static Branding fallbackBranding() {

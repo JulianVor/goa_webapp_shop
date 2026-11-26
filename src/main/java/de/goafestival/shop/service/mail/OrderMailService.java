@@ -17,6 +17,9 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 /**
  * Sends the order confirmation promised on checkout-success.html, in the same branded
  * layout goa_webapp's newsletter uses (same SMTP settings/provider - e.g. Brevo - just a
@@ -29,13 +32,15 @@ public class OrderMailService {
 
     private static final Logger log = LoggerFactory.getLogger(OrderMailService.class);
 
-    /** The literal token admins type into the body/subject where the order number should appear. */
+    /** The literal tokens admins type into the body/subject, replaced before sending. */
     private static final String ORDER_NUMBER_PLACEHOLDER = "{{bestellnummer}}";
+    private static final String ORDER_ITEMS_PLACEHOLDER = "{{bestellungen}}";
 
     private static final String DEFAULT_SUBJECT = "Deine Bestellung Nr. " + ORDER_NUMBER_PLACEHOLDER;
     private static final String DEFAULT_BODY =
             "<p>Hallo,</p><p>danke für deine Bestellung! Wir haben sie erhalten und bereiten sie vor.</p>"
                     + "<p>Deine Bestellnummer: <strong>" + ORDER_NUMBER_PLACEHOLDER + "</strong></p>"
+                    + ORDER_ITEMS_PLACEHOLDER
                     + "<p>Bei Fragen antworte einfach auf diese E-Mail.</p>";
 
     private final JavaMailSender mailSender;
@@ -80,9 +85,16 @@ public class OrderMailService {
         shopSettingsService.updateOrderConfirmationTemplate(subject, body);
     }
 
-    /** Renders the exact branded HTML a real send would produce, for the admin's preview step. */
+    /**
+     * Renders the exact branded HTML a real send would produce, for the admin's preview step -
+     * with a made-up order (number, one example item) standing in for the real thing.
+     */
     public String previewHtml(String htmlBody) {
-        return renderEmailHtml(htmlBody.replace(ORDER_NUMBER_PLACEHOLDER, "1001"));
+        Branding branding = brandingClient.current();
+        String content = htmlBody
+                .replace(ORDER_NUMBER_PLACEHOLDER, "1001")
+                .replace(ORDER_ITEMS_PLACEHOLDER, itemsTableHtml(sampleOrder(), branding));
+        return renderEmailHtml(content, branding);
     }
 
     /**
@@ -95,9 +107,13 @@ public class OrderMailService {
             return;
         }
         try {
+            Branding branding = brandingClient.current();
             String orderNumber = String.valueOf(order.display_id());
             String subject = getConfirmationSubject().replace(ORDER_NUMBER_PLACEHOLDER, orderNumber);
-            String html = renderEmailHtml(getConfirmationBody().replace(ORDER_NUMBER_PLACEHOLDER, orderNumber));
+            String content = getConfirmationBody()
+                    .replace(ORDER_NUMBER_PLACEHOLDER, orderNumber)
+                    .replace(ORDER_ITEMS_PLACEHOLDER, itemsTableHtml(order, branding));
+            String html = renderEmailHtml(content, branding);
 
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
@@ -112,15 +128,35 @@ public class OrderMailService {
         }
     }
 
-    private String renderEmailHtml(String contentHtml) {
-        Branding branding = brandingClient.current();
+    /** Renders just the items/price table - empty if the order has no items to show. */
+    private String itemsTableHtml(MedusaCompleteCartResult.Order order, Branding branding) {
+        if (order.items() == null || order.items().isEmpty()) {
+            return "";
+        }
+        Context context = new Context();
+        context.setVariable("items", order.items());
+        context.setVariable("currency", order.currency_code());
+        context.setVariable("total", order.total());
+        context.setVariable("colorAccent", branding.colorAccent());
+        return templateEngine.process("email/order-items-table", context);
+    }
+
+    private String renderEmailHtml(String contentHtml, Branding branding) {
         Context context = new Context();
         context.setVariable("contentHtml", contentHtml);
         context.setVariable("siteTitle", branding.siteTitle());
         context.setVariable("logoUrl", branding.logoImageUrl());
+        context.setVariable("backgroundUrl", branding.backgroundImageUrl());
         context.setVariable("colorPrimary", branding.colorPrimary());
         context.setVariable("colorSecondary", branding.colorSecondary());
         context.setVariable("colorAccent", branding.colorAccent());
         return templateEngine.process("email/order-confirmation-email", context);
+    }
+
+    private static MedusaCompleteCartResult.Order sampleOrder() {
+        MedusaCompleteCartResult.OrderItem item = new MedusaCompleteCartResult.OrderItem(
+                "Festival-Shirt", "M", BigDecimal.ONE, new BigDecimal("15.00"), new BigDecimal("15.00"));
+        return new MedusaCompleteCartResult.Order("order_preview", 1001L, "preview@example.com",
+                new BigDecimal("19.99"), "eur", List.of(item));
     }
 }

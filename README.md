@@ -169,8 +169,9 @@ genauso für `SHOP_DB_USER`/`SHOP_DB_NAME`.
   und nur eine Warnung geloggt - der Checkout selbst schlägt dadurch nie fehl.
   Betreff/Inhalt sind unter `/admin/settings/bestellbestaetigung` mit demselben
   Rich-Text-Editor + Live-Vorschau editierbar wie goa_webapp's Newsletter-
-  Bestätigungsmail; `{{bestellnummer}}` im Text wird durch die jeweilige
-  Bestellnummer ersetzt.
+  Bestätigungsmail (inkl. Hintergrundbild der aktuellen Edition, sofern gesetzt);
+  `{{bestellnummer}}` wird durch die Bestellnummer ersetzt, `{{bestellungen}}` durch
+  eine Tabelle mit den bestellten Artikeln, Mengen, Preisen und der Gesamtsumme.
 - **Produkte anlegen**: passiert ausschließlich im Medusa Admin Dashboard, nicht hier.
 - Wartungsmodus ist standardmäßig **an** - im eigenen Admin-Bereich ausschalten, sobald
   Produkte in Medusa stehen.
