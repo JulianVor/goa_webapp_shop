@@ -9,32 +9,33 @@
     <h1>Kasse</h1>
     <p class="flash-error" role="alert" th:if="${error}" th:text="${error}"></p>
 
-    <form th:if="${step == 'address'}" th:action="@{/kasse/adresse}" method="post" class="checkout-form">
+    <form th:if="${step == 'address'}" th:action="@{/kasse/adresse}" method="post" class="checkout-form"
+          th:with="addr=${cart.shipping_address()}">
         <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
         <h2>Kontakt &amp; Lieferadresse</h2>
         <label>E-Mail
-            <input type="email" name="email" required="required"/>
+            <input type="email" name="email" th:value="${cart.email()}" required="required"/>
         </label>
         <label>Vorname
-            <input type="text" name="firstName" required="required"/>
+            <input type="text" name="firstName" th:value="${addr != null ? addr.first_name() : null}" required="required"/>
         </label>
         <label>Nachname
-            <input type="text" name="lastName" required="required"/>
+            <input type="text" name="lastName" th:value="${addr != null ? addr.last_name() : null}" required="required"/>
         </label>
         <label>Straße &amp; Hausnummer
-            <input type="text" name="address1" required="required"/>
+            <input type="text" name="address1" th:value="${addr != null ? addr.address_1() : null}" required="required"/>
         </label>
         <label>Adresszusatz (optional)
-            <input type="text" name="address2"/>
+            <input type="text" name="address2" th:value="${addr != null ? addr.address_2() : null}"/>
         </label>
         <label>PLZ
-            <input type="text" name="postalCode" required="required"/>
+            <input type="text" name="postalCode" th:value="${addr != null ? addr.postal_code() : null}" required="required"/>
         </label>
         <label>Stadt
-            <input type="text" name="city" required="required"/>
+            <input type="text" name="city" th:value="${addr != null ? addr.city() : null}" required="required"/>
         </label>
         <label>Telefon (optional)
-            <input type="tel" name="phone"/>
+            <input type="tel" name="phone" th:value="${addr != null ? addr.phone() : null}"/>
         </label>
         <button type="submit" class="btn">Weiter zum Versand</button>
     </form>
@@ -42,6 +43,7 @@
     <form th:if="${step == 'shipping'}" th:action="@{/kasse/versand}" method="post" class="checkout-form">
         <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
         <h2>Versandart</h2>
+        <p><a th:href="@{/kasse(step='adresse')}">Adresse ändern</a></p>
         <!-- Almost always exactly one group (everything in the cart shares one Medusa Shipping
              Profile) - more than one means the cart mixes e.g. a "pickup only" item with a
              mailed one, and each needs its own method chosen (see CheckoutController). -->
@@ -63,11 +65,54 @@
     </form>
 
     <div th:if="${step == 'payment'}" class="checkout-form">
+        <h2>Bestellübersicht</h2>
+
+        <div class="order-summary-section">
+            <h3>Artikel</h3>
+            <ul class="order-summary-items">
+                <li th:each="item : ${cart.items()}">
+                    <span>
+                        <span th:text="${item.title()}">Produkt</span>
+                        <span th:if="${item.variant_title() != null and item.variant_title() != 'Default option value' and item.variant_title() != 'Default variant'}"
+                              th:text="'– ' + ${item.variant_title()}"></span>
+                        × <span th:text="${item.quantity()}">1</span>
+                    </span>
+                    <span><th:block th:replace="~{fragments/price :: amount(${item.subtotal()}, ${cart.currency_code()})}"/></span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="order-summary-section" th:with="addr=${cart.shipping_address()}">
+            <h3>Lieferadresse <a th:href="@{/kasse(step='adresse')}">ändern</a></h3>
+            <p th:if="${addr != null}">
+                <span th:text="${addr.first_name() + ' ' + addr.last_name()}">Name</span><br/>
+                <span th:text="${addr.address_1()}">Straße</span><br/>
+                <span th:if="${addr.address_2() != null and !#strings.isEmpty(addr.address_2())}" th:text="${addr.address_2()}"></span>
+                <br th:if="${addr.address_2() != null and !#strings.isEmpty(addr.address_2())}"/>
+                <span th:text="${addr.postal_code() + ' ' + addr.city()}">PLZ Stadt</span><br/>
+                <span th:text="${cart.email()}">E-Mail</span>
+            </p>
+        </div>
+
+        <div class="order-summary-section">
+            <h3>Versandart <a th:href="@{/kasse(step='versand')}">ändern</a></h3>
+            <p th:each="group : ${shippingGroups}" th:with="selected=${group.selectedOption()}">
+                <span th:if="${selected != null}" th:text="${selected.name()}">Versand</span>
+                <span th:if="${selected != null and selected.price() != null}">
+                    – <th:block th:replace="~{fragments/price :: amount(${selected.price()}, ${cart.currency_code()})}"/>
+                </span>
+            </p>
+        </div>
+
+        <div class="order-summary-totals">
+            <p>Zwischensumme <span><th:block th:replace="~{fragments/price :: amount(${cart.item_total()}, ${cart.currency_code()})}"/></span></p>
+            <p>Versand <span><th:block th:replace="~{fragments/price :: amount(${cart.shipping_total()}, ${cart.currency_code()})}"/></span></p>
+            <p class="order-summary-total"><strong>Gesamtsumme</strong>
+                <strong><th:block th:replace="~{fragments/price :: amount(${cart.total()}, ${cart.currency_code()})}"/></strong>
+            </p>
+        </div>
+
         <h2>Zahlung</h2>
-        <p>
-            Gesamtsumme:
-            <strong><th:block th:replace="~{fragments/price :: amount(${cart.total()}, ${cart.currency_code()})}"/></strong>
-        </p>
 
         <p class="flash-error" role="alert" th:if="${clientSecret == null}">
             Die Zahlung kann aktuell nicht gestartet werden - bitte versuche es später erneut oder

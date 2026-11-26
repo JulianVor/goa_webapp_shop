@@ -27,6 +27,14 @@ public final class ShippingGrouping {
 
     public record Group(String profileId, String profileName, List<String> itemTitles,
                          List<MedusaShippingOption> options, String selectedOptionId) {
+
+        /** The option the customer actually picked for this group, or null if none yet. */
+        public MedusaShippingOption selectedOption() {
+            if (selectedOptionId == null) {
+                return null;
+            }
+            return options.stream().filter(o -> selectedOptionId.equals(o.id())).findFirst().orElse(null);
+        }
     }
 
     public static List<Group> of(MedusaCart cart, List<MedusaShippingOption> allOptions) {

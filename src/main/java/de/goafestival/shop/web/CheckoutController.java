@@ -63,8 +63,16 @@ public class CheckoutController {
         return cartId != null;
     }
 
+    /**
+     * "step" lets a customer jump back to a step they'd already completed, to change
+     * something (e.g. a typo'd address) before paying - see the "ändern" links on the
+     * order overview (the payment step). Only ever moves a customer backward: it can
+     * re-show the address or shipping step even though the cart already has that data, but
+     * can never skip ahead past a step the cart doesn't actually satisfy yet.
+     */
     @GetMapping
-    public String checkout(@CookieValue(name = CartCookie.NAME, required = false) String cartId, Model model) {
+    public String checkout(@CookieValue(name = CartCookie.NAME, required = false) String cartId,
+                            @RequestParam(required = false) String step, Model model) {
         if (cartId == null) {
             return "redirect:/warenkorb";
         }
@@ -74,7 +82,7 @@ public class CheckoutController {
         }
         model.addAttribute("cart", cart);
 
-        if (!cart.hasShippingAddress()) {
+        if (!cart.hasShippingAddress() || "adresse".equals(step)) {
             model.addAttribute("step", "address");
             return "checkout";
         }
@@ -83,13 +91,16 @@ public class CheckoutController {
         List<ShippingGrouping.Group> shippingGroups = ShippingGrouping.of(cart, allOptions);
         Set<String> requiredProfileIds = shippingGroups.stream().map(ShippingGrouping.Group::profileId).collect(Collectors.toSet());
         Set<String> selectedProfileIds = ShippingGrouping.selectedProfileIds(cart, allOptions);
-        if (!selectedProfileIds.containsAll(requiredProfileIds)) {
+        boolean shippingComplete = selectedProfileIds.containsAll(requiredProfileIds);
+        if (!shippingComplete || "versand".equals(step)) {
             boolean allGroupsHaveOptions = shippingGroups.stream().noneMatch(g -> g.options().isEmpty());
             model.addAttribute("shippingGroups", shippingGroups);
             model.addAttribute("allGroupsHaveOptions", allGroupsHaveOptions);
             model.addAttribute("step", "shipping");
             return "checkout";
         }
+        // Shown again on the payment step's order overview, with "ändern" links back here.
+        model.addAttribute("shippingGroups", shippingGroups);
 
         MedusaCart.PaymentSession session;
         try {

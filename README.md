@@ -167,9 +167,13 @@ genauso für `SHOP_DB_USER`/`SHOP_DB_NAME`.
 
 ## Offene Punkte / nächste Schritte
 
-- **Zahlung**: `/kasse` führt durch Adresse → Versandart → Zahlung (eingebettetes
-  Stripe Payment Element, siehe `checkout.html`). Die Bestellung wird erst nach
-  erfolgreicher Zahlung angelegt (`/kasse/erfolg`). Publishable Key und Provider-ID
+- **Zahlung**: `/kasse` führt durch Adresse → Versandart → Bestellübersicht + Zahlung
+  (eingebettetes Stripe Payment Element, siehe `checkout.html`). Die Bestellübersicht vor
+  der Zahlung zeigt Artikel, Lieferadresse, Versandart und die Kostenaufschlüsselung mit
+  je einem "ändern"-Link zurück zum jeweiligen Schritt (`/kasse?step=adresse` bzw.
+  `?step=versand`), der die bereits eingegebenen Daten vorausfüllt bzw. die zuvor gewählte
+  Versandart vorauswählt. Die Bestellung wird erst nach erfolgreicher Zahlung angelegt
+  (`/kasse/erfolg`). Publishable Key und Provider-ID
   kommen aus `STRIPE_PUBLISHABLE_KEY`/`STRIPE_PROVIDER_ID` - der Secret Key liegt nur
   in `goa_webapp_shop_admin` (`STRIPE_API_KEY`), siehe dessen README für die
   Webhook-Einrichtung. Versandarten/-zonen müssen im Medusa Admin konfiguriert sein
