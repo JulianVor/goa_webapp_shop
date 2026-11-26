@@ -21,6 +21,13 @@ services:
       # adjust if goa_webapp's actual container/port differs.
       GOA_WEBAPP_URL: ${GOA_WEBAPP_URL:-http://life_webapp-app-1:8080}
       BRANDING_REFRESH_INTERVAL_MS: ${BRANDING_REFRESH_INTERVAL_MS:-300000}
+      # Publishable key (pk_...) from the Stripe Dashboard - safe client-side, embedded in
+      # the checkout page for Stripe.js. Must be from the SAME Stripe account/mode
+      # (test/live) as goa_webapp_shop_admin's STRIPE_API_KEY.
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+      # Must match goa_webapp_shop_admin's registered Stripe payment provider id exactly -
+      # only needs changing if that project's medusa-config.ts payment provider id changes.
+      STRIPE_PROVIDER_ID: ${STRIPE_PROVIDER_ID:-pp_stripe_stripe}
       THYMELEAF_CACHE: ${THYMELEAF_CACHE:-true}
     ports:
       - "${SHOP_APP_PORT:-8081}:8080"

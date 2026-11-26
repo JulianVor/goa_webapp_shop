@@ -46,3 +46,11 @@ app:
     # periodically afterwards - see GoaWebappBrandingClient. No trailing slash.
     goa-webapp-url: ${GOA_WEBAPP_URL:https://heimfeld.life}
     refresh-interval-ms: ${BRANDING_REFRESH_INTERVAL_MS:300000}
+  stripe:
+    # Publishable key (pk_...) - safe to expose client-side, embedded directly in the
+    # checkout page for Stripe.js. The secret key never goes here, only into Medusa
+    # (goa_webapp_shop_admin's STRIPE_API_KEY) - this app never talks to Stripe's API itself.
+    publishable-key: ${STRIPE_PUBLISHABLE_KEY:}
+    # Medusa's registered payment provider id - must match goa_webapp_shop_admin's
+    # medusa-config.ts payment provider id exactly (default there: "pp_stripe_stripe").
+    provider-id: ${STRIPE_PROVIDER_ID:pp_stripe_stripe}

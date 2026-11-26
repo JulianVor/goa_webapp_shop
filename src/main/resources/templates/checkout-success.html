@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Bestellung abgeschlossen')}"></head>
+<body>
+<div class="page-bg"></div>
+<div th:replace="~{fragments/nav :: nav}"></div>
+<main>
+    <h1 class="page-title">Danke für deine Bestellung!</h1>
+    <p th:if="${order != null}">
+        Deine Bestellnummer: <strong th:text="${order.display_id()}">1001</strong>
+    </p>
+    <p>Eine Bestätigung geht in Kürze an deine E-Mail-Adresse.</p>
+    <a class="btn" th:href="@{/}">Zurück zum Shop</a>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

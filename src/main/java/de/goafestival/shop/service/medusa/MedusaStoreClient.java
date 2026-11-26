@@ -2,8 +2,10 @@ package de.goafestival.shop.service.medusa;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import de.goafestival.shop.service.medusa.dto.MedusaCart;
+import de.goafestival.shop.service.medusa.dto.MedusaCompleteCartResult;
 import de.goafestival.shop.service.medusa.dto.MedusaProduct;
 import de.goafestival.shop.service.medusa.dto.MedusaRegion;
+import de.goafestival.shop.service.medusa.dto.MedusaShippingOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -111,7 +113,11 @@ public class MedusaStoreClient {
 
     public MedusaCart getCart(String cartId) {
         return restClient.get()
-                .uri("/store/carts/{id}", cartId)
+                .uri(uriBuilder -> uriBuilder.path("/store/carts/{id}")
+                        // Medusa's default cart fields don't include a shipping method's
+                        // display name - only its shipping_option_id.
+                        .queryParam("fields", "+shipping_methods.name")
+                        .build(cartId))
                 .retrieve()
                 .body(CartResponse.class)
                 .cart();
@@ -142,6 +148,70 @@ public class MedusaStoreClient {
                 .toBodilessEntity();
     }
 
+    /** Email + shipping/billing address - see CheckoutController's address step. */
+    public MedusaCart updateCart(String cartId, Map<String, Object> body) {
+        return restClient.post()
+                .uri("/store/carts/{id}", cartId)
+                .body(body)
+                .retrieve()
+                .body(CartResponse.class)
+                .cart();
+    }
+
+    public List<MedusaShippingOption> listShippingOptions(String cartId) {
+        return restClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/store/shipping-options")
+                        .queryParam("cart_id", cartId)
+                        // Neither is confirmed as a default field for this route - requesting
+                        // both defensively, MedusaShippingOption.price() prefers whichever is set.
+                        .queryParam("fields", "+calculated_price,+amount")
+                        .build())
+                .retrieve()
+                .body(ShippingOptionsResponse.class)
+                .shipping_options();
+    }
+
+    public MedusaCart addShippingMethod(String cartId, String shippingOptionId) {
+        return restClient.post()
+                .uri("/store/carts/{id}/shipping-methods", cartId)
+                .body(Map.of("option_id", shippingOptionId))
+                .retrieve()
+                .body(CartResponse.class)
+                .cart();
+    }
+
+    /** Reuses an existing payment collection for the cart if Medusa already has one. */
+    public String createPaymentCollection(String cartId) {
+        return restClient.post()
+                .uri("/store/payment-collections")
+                .body(Map.of("cart_id", cartId))
+                .retrieve()
+                .body(PaymentCollectionResponse.class)
+                .payment_collection()
+                .id();
+    }
+
+    public MedusaCart.PaymentCollection initPaymentSession(String paymentCollectionId, String providerId) {
+        return restClient.post()
+                .uri("/store/payment-collections/{id}/payment-sessions", paymentCollectionId)
+                .body(Map.of("provider_id", providerId))
+                .retrieve()
+                .body(PaymentCollectionResponse.class)
+                .payment_collection();
+    }
+
+    /**
+     * Returns 200 for both a successfully placed order AND a recoverable failure (e.g.
+     * payment not actually authorized yet) - see MedusaCompleteCartResult, which carries the
+     * distinguishing "type" field. Never throws for that recoverable case.
+     */
+    public MedusaCompleteCartResult completeCart(String cartId) {
+        return restClient.post()
+                .uri("/store/carts/{id}/complete", cartId)
+                .retrieve()
+                .body(MedusaCompleteCartResult.class);
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     private record RegionsResponse(List<MedusaRegion> regions) {
     }
@@ -156,5 +226,13 @@ public class MedusaStoreClient {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     private record CartResponse(MedusaCart cart) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record ShippingOptionsResponse(List<MedusaShippingOption> shipping_options) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record PaymentCollectionResponse(MedusaCart.PaymentCollection payment_collection) {
     }
 }

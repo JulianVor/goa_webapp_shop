@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Zahlung fehlgeschlagen')}"></head>
+<body>
+<div class="page-bg"></div>
+<div th:replace="~{fragments/nav :: nav}"></div>
+<main>
+    <h1 class="page-title">Zahlung fehlgeschlagen</h1>
+    <p class="flash-error" th:text="${error}">Es ist ein Fehler aufgetreten.</p>
+    <a class="btn" th:href="@{/kasse}">Erneut versuchen</a>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

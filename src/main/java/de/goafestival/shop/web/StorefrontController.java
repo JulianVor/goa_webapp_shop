@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 @Controller
 public class StorefrontController {
 
-    private static final String CART_COOKIE = "cart_id";
+    private static final String CART_COOKIE = CartCookie.NAME;
 
     private final MedusaStoreClient medusaStoreClient;
 
@@ -162,19 +162,6 @@ public class StorefrontController {
     @GetMapping("/wartung")
     public String maintenance() {
         return "maintenance";
-    }
-
-    /**
-     * Placeholder: address/shipping-option selection and the actual Stripe payment step
-     * (Medusa payment collections + Stripe Elements) aren't wired up yet - that needs a
-     * real Stripe account/API keys, which weren't available at the time this was built.
-     * The cart itself (via Medusa) is fully functional up to this point.
-     */
-    @GetMapping("/kasse")
-    public String checkoutStub(@CookieValue(name = CART_COOKIE, required = false) String cartId, Model model) {
-        MedusaCart cart = cartId != null ? medusaStoreClient.getCart(cartId) : null;
-        model.addAttribute("cart", cart);
-        return "checkout-stub";
     }
 
     @GetMapping("/impressum")

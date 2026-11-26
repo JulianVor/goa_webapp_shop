@@ -290,6 +290,55 @@ a {
     margin-bottom: 1.5rem;
 }
 
+/* ---------------------------- Checkout ---------------------------- */
+
+.checkout-form {
+    max-width: 32rem;
+}
+
+.checkout-form h2 {
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-display, normal);
+    color: var(--color-heading);
+    margin: 0 0 1.25rem;
+}
+
+.checkout-form label {
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.checkout-form input[type="text"],
+.checkout-form input[type="email"],
+.checkout-form input[type="tel"] {
+    display: block;
+    width: 100%;
+    padding: 0.6rem 0.9rem;
+    border-radius: var(--box-radius);
+    border: none;
+    margin-top: 0.3rem;
+    box-sizing: border-box;
+}
+
+.shipping-option {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--color-accent-box);
+    border-radius: var(--box-radius);
+    padding: 0.8rem 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.shipping-option span:last-child {
+    margin-left: auto;
+    font-weight: 600;
+}
+
+#payment-element {
+    margin-bottom: 1.25rem;
+}
+
 /* ---------------------------- Legal pages / maintenance ---------------------------- */
 
 .legal-content {

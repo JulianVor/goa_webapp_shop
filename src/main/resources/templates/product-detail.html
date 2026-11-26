@@ -12,7 +12,7 @@
             <div class="product-gallery" th:if="${not #lists.isEmpty(product.images())}">
                 <img class="product-detail-image" th:each="image : ${product.images()}" th:src="${image.url()}" th:alt="${product.title()}"/>
             </div>
-            <img class="product-detail-image" th:if="${#lists.isEmpty(product.images()) and product.thumbnail()}"
+            <img class="product-detail-image" th:if="${#lists.isEmpty(product.images()) and product.thumbnail() != null}"
                  th:src="${product.thumbnail()}" th:alt="${product.title()}"/>
         </div>
         <div>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Kasse')}"></head>
+<body>
+<div class="page-bg"></div>
+<div th:replace="~{fragments/nav :: nav}"></div>
+<main>
+    <h1 class="page-title">Kasse</h1>
+    <p class="flash-error" th:if="${error}" th:text="${error}"></p>
+
+    <form th:if="${step == 'address'}" th:action="@{/kasse/adresse}" method="post" class="checkout-form">
+        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <h2>Kontakt &amp; Lieferadresse</h2>
+        <label>E-Mail
+            <input type="email" name="email" required="required"/>
+        </label>
+        <label>Vorname
+            <input type="text" name="firstName" required="required"/>
+        </label>
+        <label>Nachname
+            <input type="text" name="lastName" required="required"/>
+        </label>
+        <label>Straße &amp; Hausnummer
+            <input type="text" name="address1" required="required"/>
+        </label>
+        <label>Adresszusatz (optional)
+            <input type="text" name="address2"/>
+        </label>
+        <label>PLZ
+            <input type="text" name="postalCode" required="required"/>
+        </label>
+        <label>Stadt
+            <input type="text" name="city" required="required"/>
+        </label>
+        <label>Telefon (optional)
+            <input type="tel" name="phone"/>
+        </label>
+        <button type="submit" class="btn">Weiter zum Versand</button>
+    </form>
+
+    <form th:if="${step == 'shipping'}" th:action="@{/kasse/versand}" method="post" class="checkout-form">
+        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <h2>Versandart</h2>
+        <label class="shipping-option" th:each="option : ${shippingOptions}">
+            <input type="radio" name="shippingOptionId" th:value="${option.id()}" required="required"/>
+            <span th:text="${option.name()}">Versand</span>
+            <span th:if="${option.price() != null}"
+                  th:text="${#numbers.formatDecimal(option.price(), 1, 2)} + ' ' + ${cart.currency_code().toUpperCase()}">0,00 EUR</span>
+        </label>
+        <p th:if="${#lists.isEmpty(shippingOptions)}">Aktuell ist keine Versandart konfiguriert - bitte kontaktiere uns.</p>
+        <button type="submit" class="btn" th:disabled="${#lists.isEmpty(shippingOptions)}">Weiter zur Zahlung</button>
+    </form>
+
+    <div th:if="${step == 'payment'}" class="checkout-form">
+        <h2>Zahlung</h2>
+        <p>
+            Gesamtsumme:
+            <strong th:text="${#numbers.formatDecimal(cart.total(), 1, 2)} + ' ' + ${cart.currency_code().toUpperCase()}">0,00 EUR</strong>
+        </p>
+
+        <p class="flash-error" th:if="${clientSecret == null}">
+            Die Zahlung kann aktuell nicht gestartet werden - bitte versuche es später erneut oder
+            <a th:href="@{/impressum}">kontaktiere uns</a>.
+        </p>
+
+        <form th:if="${clientSecret != null}" id="payment-form">
+            <div id="payment-element"></div>
+            <div id="payment-message" class="flash-error" style="display:none;"></div>
+            <button type="submit" class="btn" id="submit-payment">Jetzt bezahlen</button>
+        </form>
+
+        <script src="https://js.stripe.com/v3/"></script>
+        <script th:if="${clientSecret != null}" th:inline="javascript">
+            /*<![CDATA[*/
+            const stripe = Stripe(/*[[${stripePublishableKey}]]*/ "pk_test_");
+            const clientSecret = /*[[${clientSecret}]]*/ "";
+            const elements = stripe.elements({clientSecret: clientSecret});
+            elements.create("payment").mount("#payment-element");
+
+            document.getElementById("payment-form").addEventListener("submit", async function (event) {
+                event.preventDefault();
+                const submitButton = document.getElementById("submit-payment");
+                submitButton.disabled = true;
+                const {error} = await stripe.confirmPayment({
+                    elements: elements,
+                    confirmParams: {
+                        return_url: window.location.origin + "/kasse/erfolg"
+                    }
+                });
+                if (error) {
+                    const messageEl = document.getElementById("payment-message");
+                    messageEl.textContent = error.message || "Die Zahlung ist fehlgeschlagen.";
+                    messageEl.style.display = "block";
+                    submitButton.disabled = false;
+                }
+            });
+            /*]]>*/
+        </script>
+    </div>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
