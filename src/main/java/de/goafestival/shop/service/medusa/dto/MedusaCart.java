@@ -22,6 +22,7 @@ public record MedusaCart(
             String id,
             String title,
             String thumbnail,
+            String product_id,
             String variant_id,
             String variant_title,
             int quantity,

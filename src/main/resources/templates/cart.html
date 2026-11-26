@@ -30,7 +30,8 @@
                     <form th:action="@{/warenkorb/menge}" method="post" class="inline-form">
                         <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                         <input type="hidden" name="lineItemId" th:value="${item.id()}"/>
-                        <input type="number" name="quantity" min="1" th:value="${item.quantity()}" onchange="this.form.submit()"/>
+                        <input type="number" name="quantity" min="1" th:max="${maxQuantities.get(item.id())}"
+                               th:value="${item.quantity()}" onchange="this.form.submit()"/>
                     </form>
                 </td>
                 <td th:text="${#numbers.formatDecimal(item.subtotal(), 1, 2)} + ' ' + ${cart.currency_code().toUpperCase()}">29,99 EUR</td>
