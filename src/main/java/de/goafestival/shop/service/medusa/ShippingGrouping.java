@@ -15,10 +15,8 @@ import java.util.stream.Collectors;
  * Groups a cart's items by the Medusa Shipping Profile they belong to (e.g. a "pickup only"
  * festival item and a regular mailed item belong to different profiles and need their own
  * shipping method each - see MedusaCart.LineItem.shippingProfileId()). The common case
- * (everything in the cart shares one profile) is just a list of exactly one group. Used by both
- * CheckoutController (the real checkout) and AdminShippingTestController (the "Versand testen"
- * diagnostic, which never actually sets a shipping method - see Group.selectedOptionId() being
- * null there).
+ * (everything in the cart shares one profile) is just a list of exactly one group. Used by
+ * CheckoutController for both the shipping step itself and the payment step's order overview.
  */
 public final class ShippingGrouping {
 

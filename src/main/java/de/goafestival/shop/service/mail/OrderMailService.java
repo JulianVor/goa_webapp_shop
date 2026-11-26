@@ -24,7 +24,7 @@ import java.util.List;
  * Sends the order confirmation promised on checkout-success.html, in the same branded
  * layout goa_webapp's newsletter uses (same SMTP settings/provider - e.g. Brevo - just a
  * separate MAIL_FROM so recipients can tell the two senders apart). Subject/body are
- * admin-editable (see /admin/settings/bestellbestaetigung), same pattern as goa_webapp's
+ * admin-editable (see /admin/bestellbestaetigung), same pattern as goa_webapp's
  * newsletter confirmation mail.
  */
 @Service
@@ -48,6 +48,7 @@ public class OrderMailService {
     private final GoaWebappBrandingClient brandingClient;
     private final ShopSettingsService shopSettingsService;
     private final String fromAddress;
+    private final String mailHost;
     private final boolean enabled;
 
     public OrderMailService(JavaMailSender mailSender, ITemplateEngine templateEngine,
@@ -62,6 +63,7 @@ public class OrderMailService {
         this.fromAddress = !configuredFrom.isBlank() ? configuredFrom
                 : !mailUsername.isBlank() ? mailUsername
                 : "bestellung@goa-festival.de";
+        this.mailHost = mailHost;
         this.enabled = !mailHost.isBlank();
     }
 
@@ -95,6 +97,68 @@ public class OrderMailService {
                 .replace(ORDER_NUMBER_PLACEHOLDER, "1001")
                 .replace(ORDER_ITEMS_PLACEHOLDER, itemsTableHtml(sampleOrder(), branding));
         return renderEmailHtml(content, branding);
+    }
+
+    /**
+     * Sends a made-up order confirmation to fromAddress (MAIL_FROM, or MAIL_USERNAME if that's
+     * blank) - unlike sendOrderConfirmation, this is a deliberate SMTP diagnostic: it never
+     * swallows a failure. The admin sees the exact underlying error (e.g. Brevo's own "535
+     * Authentication failed") on the page, and the full exception (with stack trace) is logged
+     * at ERROR for anyone checking the server logs afterwards.
+     *
+     * @return the address the test mail was sent to
+     * @throws IllegalStateException no SMTP server or no recipient address is configured
+     * @throws TestMailException     sending itself failed - getMessage() is the root cause's
+     *                                message, suitable for showing directly in the admin UI
+     */
+    public String sendTestMail() {
+        if (!enabled) {
+            throw new IllegalStateException("Kein Mailserver konfiguriert - MAIL_HOST ist leer.");
+        }
+        try {
+            Branding branding = brandingClient.current();
+            MedusaCompleteCartResult.Order sample = sampleOrder();
+            String subject = getConfirmationSubject().replace(ORDER_NUMBER_PLACEHOLDER, "TEST-1001") + " (Testmail)";
+            String content = getConfirmationBody()
+                    .replace(ORDER_NUMBER_PLACEHOLDER, "TEST-1001")
+                    .replace(ORDER_ITEMS_PLACEHOLDER, itemsTableHtml(sample, branding));
+            String html = renderEmailHtml(content, branding);
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
+            helper.setTo(fromAddress);
+            helper.setFrom(fromAddress);
+            helper.setSubject(subject);
+            helper.setText(html, true);
+            mailSender.send(message);
+            return fromAddress;
+        } catch (MessagingException | MailException e) {
+            log.error("Test-Mail an {} konnte nicht gesendet werden (MAIL_HOST={})", fromAddress, mailHost, e);
+            throw new TestMailException(fromAddress, rootMessage(e));
+        }
+    }
+
+    /** Thrown only by sendTestMail() - see its own javadoc for why this one doesn't just log and move on. */
+    public static class TestMailException extends RuntimeException {
+        private final String recipient;
+
+        public TestMailException(String recipient, String message) {
+            super(message);
+            this.recipient = recipient;
+        }
+
+        public String getRecipient() {
+            return recipient;
+        }
+    }
+
+    /** The deepest cause's message - e.g. the SMTP server's own rejection reason, not Spring's wrapper text around it. */
+    private static String rootMessage(Throwable e) {
+        Throwable current = e;
+        while (current.getCause() != null && current.getCause() != current) {
+            current = current.getCause();
+        }
+        return current.getMessage() != null ? current.getMessage() : current.toString();
     }
 
     /**

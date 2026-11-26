@@ -18,6 +18,7 @@ import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -124,6 +125,46 @@ class OrderMailServiceTest {
         doThrow(new MailSendException("boom")).when(mailSender).send(any(MimeMessage.class));
 
         assertDoesNotThrow(() -> service.sendOrderConfirmation(order()));
+    }
+
+    @Test
+    void sendTestMailThrowsIllegalStateWithoutMailHostConfigured() {
+        OrderMailService service = service(/* mailHost */ "");
+
+        assertThrows(IllegalStateException.class, service::sendTestMail);
+        verifyNoInteractions(mailSender, templateEngine, brandingClient, shopSettingsService);
+    }
+
+    @Test
+    void sendTestMailSendsToTheConfiguredFromAddressAndReturnsIt() throws Exception {
+        OrderMailService service = service("smtp-relay.brevo.com");
+        when(shopSettingsService.get()).thenReturn(new ShopSettings());
+        when(brandingClient.current()).thenReturn(fallbackBranding());
+        when(templateEngine.process(anyString(), any())).thenReturn("<html></html>");
+        MimeMessage message = new MimeMessage(Session.getDefaultInstance(new Properties()));
+        when(mailSender.createMimeMessage()).thenReturn(message);
+
+        String recipient = service.sendTestMail();
+
+        assertEquals("bestellung@example.com", recipient);
+        verify(mailSender).send(message);
+        assertEquals("bestellung@example.com", message.getAllRecipients()[0].toString());
+    }
+
+    @Test
+    void sendTestMailThrowsWithTheRootCauseMessageOnFailure() {
+        OrderMailService service = service("smtp-relay.brevo.com");
+        when(shopSettingsService.get()).thenReturn(new ShopSettings());
+        when(brandingClient.current()).thenReturn(fallbackBranding());
+        when(templateEngine.process(anyString(), any())).thenReturn("<html></html>");
+        when(mailSender.createMimeMessage()).thenReturn(new MimeMessage(Session.getDefaultInstance(new Properties())));
+        doThrow(new MailSendException("wrapper message", new RuntimeException("535 Authentication failed")))
+                .when(mailSender).send(any(MimeMessage.class));
+
+        OrderMailService.TestMailException e = assertThrows(OrderMailService.TestMailException.class, service::sendTestMail);
+
+        assertEquals("bestellung@example.com", e.getRecipient());
+        assertEquals("535 Authentication failed", e.getMessage());
     }
 
     private OrderMailService service(String mailHost) {

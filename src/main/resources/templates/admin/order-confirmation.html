@@ -2,17 +2,13 @@
 <html lang="de" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head-admin :: head-admin('Bestellbestätigung')}"></head>
 <body class="admin-body">
-<div th:replace="~{fragments/admin-nav :: admin-nav('settings')}"></div>
+<div th:replace="~{fragments/admin-nav :: admin-nav('bestellbestaetigung')}"></div>
 
 <main class="admin-main">
-    <h1>Einstellungen</h1>
-
-    <nav class="admin-subnav">
-        <a th:href="@{/admin/settings}">Allgemein</a>
-        <a class="active" th:href="@{/admin/settings/bestellbestaetigung}">Bestellbestätigung</a>
-    </nav>
+    <h1>Bestellbestätigung</h1>
 
     <p class="flash-success" th:if="${success}" th:text="${success}"></p>
+    <p class="flash-error" th:if="${error}" th:text="${error}"></p>
 
     <p class="field-hint" th:unless="${mailEnabled}">
         Es ist kein Mailserver konfiguriert - die Bestellbestätigung wird deshalb nicht verschickt. Setze
@@ -21,7 +17,7 @@
     </p>
 
     <form th:if="${mailEnabled}" method="post" id="order-confirmation-form" class="admin-form"
-          th:action="@{/admin/settings/bestellbestaetigung}" th:object="${confirmationForm}">
+          th:action="@{/admin/bestellbestaetigung}" th:object="${confirmationForm}">
         <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" id="order-confirmation-csrf"/>
 
         <fieldset>
@@ -60,6 +56,20 @@
             <button type="button" class="btn btn-secondary" id="order-confirmation-preview-btn">Vorschau ansehen</button>
             <button type="submit" class="btn btn-primary">Speichern</button>
         </div>
+    </form>
+
+    <form th:if="${mailEnabled}" method="post" th:action="@{/admin/bestellbestaetigung/testmail}" style="margin-top: 1rem;">
+        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <p class="field-hint">
+            Verschickt eine Bestellbestätigung mit erfundenen Beispieldaten über die echte
+            SMTP-Verbindung - an die in der <code>.env</code> hinterlegte Absenderadresse
+            (<code>MAIL_FROM</code> bzw. <code>MAIL_USERNAME</code>). Nützlich um zu prüfen, ob
+            der Mailversand überhaupt funktioniert: ein Fehlschlag zeigt hier die genaue
+            Fehlermeldung des Mailservers (z.B. "535 Authentication failed") an, nicht nur ein
+            allgemeines "hat nicht geklappt" - zusätzlich landet der komplette Fehler mit
+            Stacktrace im Server-Log.
+        </p>
+        <button type="submit" class="btn btn-secondary">E-Mail Versand testen</button>
     </form>
 
     <div th:replace="~{fragments/order-confirmation-preview-shell :: order-confirmation-preview-shell}"></div>
@@ -144,7 +154,7 @@
             var body = new URLSearchParams();
             body.set('htmlBody', hiddenField.value);
             if (csrfInput) body.set(csrfInput.name, csrfInput.value);
-            fetch('/admin/settings/bestellbestaetigung/preview', {
+            fetch('/admin/bestellbestaetigung/preview', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                 body: body.toString()

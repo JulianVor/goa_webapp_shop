@@ -55,11 +55,7 @@ am jeweiligen Produkt unter **Metadata** folgende Keys setzen:
   (z.B. ein Abhol-Artikel zusammen mit einem Versand-Artikel) und lässt pro Profile eine
   eigene Versandart wählen (siehe `ShippingGrouping`). Ohne eigenes Shipping Profile
   bleibt ein `pickup_only`-Produkt im Standard-Profile und wird ganz normal mit
-  Versandkosten berechnet - das Metadata-Feld allein reicht dafür nicht. Unter
-  **Admin → Versand testen** lässt sich das direkt prüfen: Produkte auswählen zeigt, in
-  welche Versand-Gruppe(n) sie fallen und was sie kosten würden - ohne eine echte
-  Bestellung anzulegen. Taucht ein `pickup_only`-Produkt dort in derselben Gruppe wie ein
-  normales Versand-Produkt auf, ist die Shipping-Profile-Zuordnung in Medusa noch falsch.
+  Versandkosten berechnet - das Metadata-Feld allein reicht dafür nicht.
 - Nach Ablauf von `preorder_deadline` verschwindet das Produkt automatisch aus der
   Übersicht und die Detailseite liefert 404 - keine manuelle Aktion nötig.
 - Ein Produkt ohne `preorder: true` ist komplett unbeeinflusst - normaler Lagerartikel.
@@ -186,9 +182,15 @@ genauso für `SHOP_DB_USER`/`SHOP_DB_NAME`.
   `MAIL_HOST`/`MAIL_USERNAME`/`MAIL_PASSWORD`/`MAIL_FROM` (gleiches SMTP-Setup wie
   goa_webapp's Newsletter, z.B. Brevo). Ohne `MAIL_HOST` wird die Mail übersprungen
   und nur eine Warnung geloggt - der Checkout selbst schlägt dadurch nie fehl.
-  Betreff/Inhalt sind unter `/admin/settings/bestellbestaetigung` mit demselben
-  Rich-Text-Editor + Live-Vorschau editierbar wie goa_webapp's Newsletter-
-  Bestätigungsmail (inkl. Hintergrundbild der aktuellen Edition, sofern gesetzt);
+  Betreff/Inhalt sind unter **Admin → Bestellbestätigung** (`/admin/bestellbestaetigung`)
+  mit demselben Rich-Text-Editor + Live-Vorschau editierbar wie goa_webapp's Newsletter-
+  Bestätigungsmail (inkl. Hintergrundbild der aktuellen Edition, sofern gesetzt). Dort
+  gibt es auch einen "E-Mail Versand testen"-Button, der eine Beispielmail über die
+  echte SMTP-Verbindung an `MAIL_FROM`/`MAIL_USERNAME` verschickt - nützlich zur Fehlersuche,
+  wenn Bestellbestätigungen nicht ankommen: ein Fehlschlag zeigt die genaue SMTP-
+  Fehlermeldung direkt im Admin an (zusätzlich mit vollem Stacktrace im Server-Log, siehe
+  `OrderMailService.sendTestMail()`), statt nur eine stille Warnung zu loggen wie der
+  normale Versand nach einer Bestellung.
   `{{bestellnummer}}` wird durch die Bestellnummer ersetzt, `{{bestellungen}}` durch
   eine Tabelle mit den bestellten Artikeln, Mengen und Preisen, separat ausgewiesenen
   Versandkosten und der Gesamtsumme.
