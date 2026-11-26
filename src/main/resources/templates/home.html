@@ -17,6 +17,7 @@
             <img class="product-card-image" th:if="${product.thumbnail()}" th:src="${product.thumbnail()}" th:alt="${product.title()}"/>
             <div class="product-card-body">
                 <h2 class="product-card-title" th:text="${product.title()}">Produktname</h2>
+                <p class="product-card-subtitle" th:if="${product.subtitle()}" th:text="${product.subtitle()}">Untertitel</p>
                 <p class="product-card-price" th:if="${product.lowestPrice() != null}"
                    th:text="${#numbers.formatDecimal(product.lowestPrice().calculated_amount(), 1, 2)} + ' ' + ${product.lowestPrice().currency_code().toUpperCase()}">29,99 EUR</p>
                 <p class="product-card-preorder" th:if="${product.isPreorder()}">

@@ -13,6 +13,7 @@
              th:src="${product.thumbnail()}" th:alt="${product.title()}"/>
         <div>
             <h1 class="product-detail-title" th:text="${product.title()}">Produktname</h1>
+            <p class="product-detail-subtitle" th:if="${product.subtitle()}" th:text="${product.subtitle()}">Untertitel</p>
             <p class="product-detail-description" th:if="${product.description()}" th:text="${product.description()}">Beschreibung</p>
 
             <p class="preorder-notice" th:if="${product.isPreorder()}">

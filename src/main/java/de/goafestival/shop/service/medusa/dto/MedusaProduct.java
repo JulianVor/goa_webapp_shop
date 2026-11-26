@@ -14,6 +14,7 @@ import java.util.Map;
 public record MedusaProduct(
         String id,
         String title,
+        String subtitle,
         String description,
         String thumbnail,
         List<Image> images,
