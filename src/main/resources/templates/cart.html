@@ -1,57 +1,44 @@
 <!DOCTYPE html>
 <html lang="de" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head('Warenkorb')}"></head>
+<head th:replace="~{fragments/head :: head('Warenkorb – Festivalshop')}"></head>
 <body>
-<div class="page-bg"></div>
+<div class="page-bg" aria-hidden="true"></div>
 <div th:replace="~{fragments/nav :: nav}"></div>
-<main>
-    <h1 class="page-title">Warenkorb</h1>
-    <p class="flash-success" th:if="${success}" th:text="${success}"></p>
-    <p class="flash-error" th:if="${error}" th:text="${error}"></p>
-
+<main class="shop-panel cart-panel">
+    <a class="back-link" th:href="@{/}">Alle Produkte</a>
+    <h1>Warenkorb</h1>
+    <p class="flash-success" role="status" th:if="${success}" th:text="${success}"></p>
+    <p class="flash-error" role="alert" th:if="${error}" th:text="${error}"></p>
     <div th:if="${cart == null or #lists.isEmpty(cart.items())}" class="empty-state">
         <p>Dein Warenkorb ist leer.</p>
         <a class="btn" th:href="@{/}">Weiter einkaufen</a>
     </div>
-
     <th:block th:if="${cart != null and not #lists.isEmpty(cart.items())}">
-        <table class="cart-table">
-            <thead>
-            <tr><th>Produkt</th><th>Menge</th><th>Preis</th><th></th></tr>
-            </thead>
-            <tbody>
-            <tr th:each="item : ${cart.items()}">
-                <td>
-                    <span th:text="${item.title()}">Shirt</span>
-                    <span th:if="${item.variant_title() != null and item.variant_title() != 'Default option value'}"
-                          th:text="'(' + ${item.variant_title()} + ')'"> (M)</span>
-                </td>
-                <td>
-                    <form th:action="@{/warenkorb/menge}" method="post" class="inline-form">
-                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <ul class="cart-lines">
+            <li class="cart-line" th:each="item : ${cart.items()}" th:with="product=${cartProducts.get(item.product_id())}">
+                <div class="line-photo" th:if="${item.thumbnail() != null or (product != null and product.imageForCard() != null)}">
+                    <img th:src="${item.thumbnail() ?: product.imageForCard()}" alt=""/>
+                </div>
+                <div class="line-info">
+                    <strong th:text="${item.title()}">Produktname</strong>
+                    <span th:if="${item.variant_title() != null and item.variant_title() != 'Default option value' and item.variant_title() != 'Default variant'}" th:text="${item.variant_title()}"></span>
+                    <span th:if="${product != null and product.isPickupOnly()}">Nur Festivalabholung</span>
+                </div>
+                <strong class="line-price"><th:block th:replace="~{fragments/price :: amount(${item.subtotal()}, ${cart.currency_code()})}"/></strong>
+                <div class="line-actions">
+                    <form th:action="@{/warenkorb/menge}" method="post" class="quantity-form">
                         <input type="hidden" name="lineItemId" th:value="${item.id()}"/>
-                        <input type="number" name="quantity" min="1" th:max="${maxQuantities.get(item.id())}"
-                               th:value="${item.quantity()}" onchange="this.form.submit()"/>
+                        <label>Menge <input type="number" name="quantity" min="1" required th:max="${maxQuantities.get(item.id())}" th:value="${item.quantity()}"/></label>
+                        <button class="text-button" type="submit">Ändern</button>
                     </form>
-                </td>
-                <td th:text="${#numbers.formatDecimal(item.subtotal(), 1, 2)} + ' ' + ${cart.currency_code().toUpperCase()}">29,99 EUR</td>
-                <td>
-                    <form th:action="@{/warenkorb/entfernen}" method="post" class="inline-form">
-                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <form th:action="@{/warenkorb/entfernen}" method="post">
                         <input type="hidden" name="lineItemId" th:value="${item.id()}"/>
-                        <button type="submit" class="link-button">Entfernen</button>
+                        <button type="submit" class="text-button" th:aria-label="|Entfernen: ${item.title()} ${item.variant_title() ?: ''}|">Entfernen</button>
                     </form>
-                </td>
-            </tr>
-            </tbody>
-            <tfoot>
-            <tr class="cart-total-row">
-                <td colspan="2">Gesamt</td>
-                <td th:text="${#numbers.formatDecimal(cart.total(), 1, 2)} + ' ' + ${cart.currency_code().toUpperCase()}">0,00 EUR</td>
-                <td></td>
-            </tr>
-            </tfoot>
-        </table>
+                </div>
+            </li>
+        </ul>
+        <p class="cart-total"><strong>Gesamt</strong><strong><th:block th:replace="~{fragments/price :: amount(${cart.total()}, ${cart.currency_code()})}"/></strong></p>
         <a class="btn" th:href="@{/kasse}">Zur Kasse</a>
     </th:block>
 </main>

@@ -1,6 +1,6 @@
 # goa_webapp_shop
 
-Der öffentliche Fanshop-Storefront für `shop.heimfeld.life` - Spring Boot + Thymeleaf,
+Der öffentliche Festivalshop-Storefront für `shop.heimfeld.life` - Spring Boot + Thymeleaf,
 genau wie [goa_webapp](https://github.com/JulianVor/goa_webapp), aber ohne eigene
 Produktdaten: die kommen vollständig über die Store-API von
 [goa_webapp_shop_admin](https://github.com/JulianVor/goa_webapp_shop_admin) (ein
@@ -26,7 +26,7 @@ Medusa und werden über das **Medusa Admin Dashboard** gepflegt (erreichbar unte
 hier deckt nur ab, was Medusa nicht mitbringt:
 
 - Impressum, AGB, Widerrufsbelehrung, Datenschutzerklärung
-- Wartungsmodus-Schalter ("Fanshop kommt bald" statt Sortiment)
+- Wartungsmodus-Schalter ("Festivalshop kommt bald" statt Sortiment)
 - Kontakt-E-Mail
 
 ## Vorbestellungen (Preorder)

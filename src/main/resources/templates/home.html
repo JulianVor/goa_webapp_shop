@@ -1,36 +1,32 @@
 <!DOCTYPE html>
 <html lang="de" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head('Fanshop – Grumbrechtstraßen Open Air')}"></head>
+<head th:replace="~{fragments/head :: head('Festivalshop – Grumbrechtstraßen Open Air')}"></head>
 <body>
-<div class="page-bg"></div>
+<div class="page-bg" aria-hidden="true"></div>
 <div th:replace="~{fragments/nav :: nav}"></div>
-<main>
-    <h1 class="page-title">Fanshop</h1>
-
-    <div th:if="${#lists.isEmpty(products)}" class="empty-state">
-        <p>Aktuell sind keine Produkte verfügbar - schau bald wieder vorbei!</p>
-    </div>
-
-    <div class="product-grid" th:unless="${#lists.isEmpty(products)}">
-        <a class="product-card" th:each="product : ${products}"
-           th:href="@{'/produkte/' + ${product.id()}}">
-            <div class="product-card-image-wrap">
-                <img class="product-card-image" th:if="${product.thumbnail()}" th:src="${product.thumbnail()}" th:alt="${product.title()}"/>
-                <span class="discount-badge" th:if="${product.lowestPrice() != null and product.lowestPrice().isOnSale()}"
-                      th:text="'-' + ${product.lowestPrice().discountPercent()} + '%'">-25%</span>
+<main class="catalog">
+    <h1 class="poster-title">Festivalshop</h1>
+    <p th:if="${#lists.isEmpty(products)}" class="shop-panel empty-state">Aktuell sind keine Produkte verfügbar. Schau bald wieder vorbei!</p>
+    <div th:unless="${#lists.isEmpty(products)}" class="product-grid"
+         th:classappend="${#lists.size(products) <= 2 or #lists.size(products) == 4} ? 'grid-pair'">
+        <a class="product-card shop-panel" th:each="product : ${products}" th:href="@{'/produkte/' + ${product.id()}}"
+           th:with="price=${product.lowestPrice()}, image=${product.imageForCard()}">
+            <div class="card-media">
+                <img th:if="${image}" th:src="${image}" alt=""/>
+                <span class="image-missing" th:unless="${image}">Produktbild folgt</span>
+                <div class="badges">
+                    <span class="badge" th:if="${product.isSoldOut()}">Ausverkauft</span>
+                    <span class="badge" th:if="${product.isPreorder() and !product.isSoldOut()}">Vorbestellung</span>
+                    <span class="badge sale" th:if="${price != null and price.isOnSale()}"
+                          th:text="'−' + ${price.discountPercent()} + ' %'">−25 %</span>
+                </div>
             </div>
-            <div class="product-card-body">
-                <h2 class="product-card-title" th:text="${product.title()}">Produktname</h2>
-                <p class="product-card-subtitle" th:if="${product.subtitle()}" th:text="${product.subtitle()}">Untertitel</p>
-                <p class="product-card-price" th:if="${product.lowestPrice() != null}">
-                    <span class="price-original" th:if="${product.lowestPrice().isOnSale()}"
-                          th:text="${#numbers.formatDecimal(product.lowestPrice().original_amount(), 1, 2)} + ' ' + ${product.lowestPrice().currency_code().toUpperCase()}">20,00 EUR</span>
-                    <span th:classappend="${product.lowestPrice().isOnSale()} ? 'price-sale'"
-                          th:text="${#numbers.formatDecimal(product.lowestPrice().calculated_amount(), 1, 2)} + ' ' + ${product.lowestPrice().currency_code().toUpperCase()}">29,99 EUR</span>
-                </p>
-                <p class="product-card-preorder" th:if="${product.isPreorder()}">
-                    Vorbestellung bis <span th:text="${product.preorderDeadlineFormatted()}">01.01.2027</span>
-                </p>
+            <div class="card-copy">
+                <h2 th:text="${product.title()}">Produktname</h2>
+                <div th:replace="~{fragments/price :: price(${price}, ${product.hasPriceRange()})}"></div>
+                <p th:if="${product.subtitle() != null and !product.isPreorder()}" th:text="${product.subtitle()}"></p>
+                <p th:if="${product.isPreorder() and product.preorderDeadline() != null}">Bestellbar bis <span th:text="${product.preorderDeadlineFormatted()}"></span></p>
+                <p th:if="${product.isPickupOnly()}">Nur Abholung auf dem Festival</p>
             </div>
         </a>
     </div>

@@ -4,18 +4,17 @@
 <body>
 <div class="page-bg"></div>
 <div th:replace="~{fragments/nav :: nav}"></div>
-<main>
+<main class="shop-panel reading-panel">
     <h1 class="page-title">Kasse</h1>
     <div th:if="${cart == null or #lists.isEmpty(cart.items())}" class="empty-state">
         <p>Dein Warenkorb ist leer.</p>
         <a class="btn" th:href="@{/}">Weiter einkaufen</a>
     </div>
     <div th:if="${cart != null and not #lists.isEmpty(cart.items())}">
-        <p>Die Bezahlung ist hier noch nicht angebunden - dafür wird ein Stripe-Konto samt API-Schlüsseln
-           benötigt. Der Warenkorb selbst funktioniert bereits vollständig über Medusa.</p>
+        <p>Die Kasse öffnet bald. Deine Artikel sind im Warenkorb gespeichert.</p>
         <p>
             Gesamtsumme:
-            <strong th:text="${#numbers.formatDecimal(cart.total(), 1, 2)} + ' ' + ${cart.currency_code().toUpperCase()}">0,00 EUR</strong>
+            <strong><th:block th:replace="~{fragments/price :: amount(${cart.total()}, ${cart.currency_code()})}"/></strong>
         </p>
         <a class="btn btn-secondary" th:href="@{/warenkorb}">Zurück zum Warenkorb</a>
     </div>
