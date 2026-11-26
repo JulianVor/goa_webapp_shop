@@ -42,6 +42,9 @@ public class ShopSettings {
     @Column(columnDefinition = "TEXT")
     private String orderConfirmationBody;
 
+    /** Whole-shop HTTP Basic gate (see ShopLockFilter), using the admin login's own credentials. Off unless set. */
+    private Boolean testAccessEnabled;
+
     public Long getId() {
         return id;
     }
@@ -112,5 +115,13 @@ public class ShopSettings {
 
     public void setOrderConfirmationBody(String orderConfirmationBody) {
         this.orderConfirmationBody = orderConfirmationBody;
+    }
+
+    public boolean isTestAccessEnabled() {
+        return testAccessEnabled != null && testAccessEnabled;
+    }
+
+    public void setTestAccessEnabled(Boolean testAccessEnabled) {
+        this.testAccessEnabled = testAccessEnabled;
     }
 }

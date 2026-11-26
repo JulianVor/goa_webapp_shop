@@ -9,6 +9,7 @@ public class ShopSettingsForm {
     private String widerrufText;
     private String datenschutzText;
     private String contactEmail;
+    private boolean testAccessEnabled;
 
     public boolean isMaintenanceMode() {
         return maintenanceMode;
@@ -56,5 +57,13 @@ public class ShopSettingsForm {
 
     public void setContactEmail(String contactEmail) {
         this.contactEmail = contactEmail;
+    }
+
+    public boolean isTestAccessEnabled() {
+        return testAccessEnabled;
+    }
+
+    public void setTestAccessEnabled(boolean testAccessEnabled) {
+        this.testAccessEnabled = testAccessEnabled;
     }
 }

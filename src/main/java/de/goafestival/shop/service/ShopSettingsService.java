@@ -30,6 +30,7 @@ public class ShopSettingsService {
         settings.setWiderrufText(form.getWiderrufText());
         settings.setDatenschutzText(form.getDatenschutzText());
         settings.setContactEmail(form.getContactEmail());
+        settings.setTestAccessEnabled(form.isTestAccessEnabled());
         shopSettingsRepository.save(settings);
     }
 

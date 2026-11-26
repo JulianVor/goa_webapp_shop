@@ -42,6 +42,7 @@ public class AdminSettingsController {
         form.setWiderrufText(settings.getWiderrufText());
         form.setDatenschutzText(settings.getDatenschutzText());
         form.setContactEmail(settings.getContactEmail());
+        form.setTestAccessEnabled(settings.isTestAccessEnabled());
         return form;
     }
 }

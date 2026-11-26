@@ -28,6 +28,11 @@ hier deckt nur ab, was Medusa nicht mitbringt:
 - Impressum, AGB, Widerrufsbelehrung, Datenschutzerklärung
 - Wartungsmodus-Schalter ("Festivalshop kommt bald" statt Sortiment)
 - Kontakt-E-Mail
+- Testzugang: sperrt den kompletten Shop (nicht nur `/admin`) hinter einer
+  HTTP-Basic-Anmeldeabfrage des Browsers, mit denselben Zugangsdaten wie der Admin-Login
+  (`ADMIN_USERNAME`/`ADMIN_PASSWORD`) - genau wie goa_webapp's eigener Testzugang (siehe
+  dessen `SiteLockFilter`). Hier: `ShopLockFilter`, läuft vor Spring Security und greift
+  deshalb auch für `/admin` und `/login` selbst. Standardmäßig aus.
 
 ## Vorbestellungen (Preorder)
 

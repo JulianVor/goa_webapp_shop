@@ -39,6 +39,17 @@
             <label>Datenschutzerklärung (HTML)<textarea th:field="*{datenschutzText}" rows="14" class="code-textarea"></textarea></label>
         </fieldset>
 
+        <fieldset>
+            <legend>Testzugang</legend>
+            <label class="checkbox-row"><input type="checkbox" th:field="*{testAccessEnabled}"/> Gesamten Shop hinter einem Login sperren</label>
+            <p class="field-hint">
+                Sperrt den kompletten Festivalshop (nicht nur /admin) hinter einer Anmeldeabfrage des
+                Browsers. Die Zugangsdaten sind dieselben wie für dieses Admin-Portal. Vorsicht beim
+                Aktivieren auf dem echten, veröffentlichten Shop - Besucher kommen dann ohne
+                Admin-Login nirgends mehr hin.
+            </p>
+        </fieldset>
+
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Speichern</button>
             <a class="btn" th:href="@{/admin}">Zurück</a>
