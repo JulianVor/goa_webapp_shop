@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Vertrag widerrufen')}"></head>
+<body>
+<div class="page-bg" aria-hidden="true"></div>
+<div th:replace="~{fragments/nav :: nav}"></div>
+<main class="shop-panel reading-panel">
+    <h1 class="page-title">Vertrag widerrufen</h1>
+    <p class="flash-success" role="status" th:if="${success}" th:text="${success}"></p>
+
+    <p>
+        Wenn du von deinem Widerrufsrecht Gebrauch machen möchtest (siehe
+        <a th:href="@{/widerruf}">Widerrufsbelehrung</a>), kannst du das hier formlos und
+        elektronisch erklären - ein Brief ist nicht nötig. Du erhältst sofort eine Bestätigung
+        per E-Mail mit allen Angaben, die du hier eingereicht hast.
+    </p>
+
+    <form th:unless="${success}" method="post" th:action="@{/widerruf-erklaeren}" class="checkout-form">
+        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <label>Name
+            <input type="text" name="name" required="required"/>
+        </label>
+        <label>Bestellreferenz (Bestellnummer oder E-Mail, mit der bestellt wurde)
+            <input type="text" name="orderReference" required="required"/>
+        </label>
+        <label>E-Mail (für die Bestätigung)
+            <input type="email" name="email" required="required"/>
+        </label>
+        <label>Anmerkung (optional)
+            <textarea name="note" rows="4"></textarea>
+        </label>
+        <button type="submit" class="btn">Widerruf erklären</button>
+    </form>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

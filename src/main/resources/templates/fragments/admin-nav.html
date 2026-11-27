@@ -6,6 +6,7 @@
     <nav class="admin-sidebar-nav">
         <a th:href="@{/admin}" th:classappend="${active == 'dashboard'} ? 'active'"><span class="admin-sidebar-icon">🏠</span> Dashboard</a>
         <a th:href="@{/admin/bestellbestaetigung}" th:classappend="${active == 'bestellbestaetigung'} ? 'active'"><span class="admin-sidebar-icon">📧</span> Bestellbestätigung</a>
+        <a th:href="@{/admin/widerrufe}" th:classappend="${active == 'widerrufe'} ? 'active'"><span class="admin-sidebar-icon">↩️</span> Widerrufe</a>
         <a th:href="@{/admin/settings}" th:classappend="${active == 'settings'} ? 'active'"><span class="admin-sidebar-icon">⚙️</span> Einstellungen</a>
     </nav>
     <div class="admin-sidebar-footer">
