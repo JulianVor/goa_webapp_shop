@@ -66,6 +66,10 @@ app:
     # ISO 3166-1 alpha-2 country code used to resolve the Medusa region (and thus
     # currency/pricing/tax) for anonymous storefront visitors - see MedusaStoreClient.
     default-country-code: ${MEDUSA_DEFAULT_COUNTRY_CODE:de}
+    # Medusa "Secret API Key" (Admin Dashboard: Settings > API Key Management > Secret API
+    # Keys) - only needed for the Abholliste CSV export (MedusaAdminClient). Left empty,
+    # that export just shows a "not configured" error instead of the file.
+    admin-secret-api-key: ${MEDUSA_ADMIN_API_KEY:}
   branding:
     # Base URL goa_webapp's GET /api/branding is fetched from, live at startup and
     # periodically afterwards - see GoaWebappBrandingClient. No trailing slash.

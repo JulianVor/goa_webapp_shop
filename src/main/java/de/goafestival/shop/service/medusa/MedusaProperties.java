@@ -8,6 +8,12 @@ public class MedusaProperties {
     private String storeApiUrl = "http://localhost:9000";
     private String publishableApiKey = "";
     private String defaultCountryCode = "de";
+    /**
+     * A Medusa "Secret API Key" (Admin Dashboard: Settings > API Key Management > Secret API
+     * Keys), needed only for the Abholliste CSV export (see MedusaAdminClient) - unlike the
+     * publishable key, this grants admin-level read access. Blank disables that export.
+     */
+    private String adminSecretApiKey = "";
 
     public String getStoreApiUrl() {
         return storeApiUrl;
@@ -31,5 +37,13 @@ public class MedusaProperties {
 
     public void setDefaultCountryCode(String defaultCountryCode) {
         this.defaultCountryCode = defaultCountryCode;
+    }
+
+    public String getAdminSecretApiKey() {
+        return adminSecretApiKey;
+    }
+
+    public void setAdminSecretApiKey(String adminSecretApiKey) {
+        this.adminSecretApiKey = adminSecretApiKey;
     }
 }

@@ -271,3 +271,25 @@ Festivalshop" für den vollständigen Hintergrund):
   ganz ohne Admin-Eingriff - einfach den Preis in Medusa ändern. Es gibt aktuell keine
   Admin-Oberfläche, um die geloggte Preishistorie selbst einzusehen (nur in der Datenbank,
   Tabelle `price_observation`).
+
+## CSV-Exporte
+
+Zwei unterschiedliche Exporte, für zwei unterschiedliche Zwecke:
+
+- **Bestellungen für die Buchhaltung**: braucht keinen eigenen Code - Medusa selbst kann das
+  schon. Im Medusa Admin Dashboard unter **Orders** gibt es eine eingebaute Export-Funktion
+  (Filter nach Zeitraum/Status, dann Download als CSV). Da es rein um Medusas eigene
+  Bestelldaten geht, gibt es keinen Grund, das hier zu duplizieren ("Medusa bleibt vanilla").
+- **Abholliste fürs Festival** (`Admin → Abholliste (CSV)`, `/admin/export/abholung.csv`):
+  das kann Medusas Export nicht leisten, weil es shop-eigene Logik braucht (welche Artikel
+  `pickup_only` sind, siehe `MedusaProduct.isPickupOnly()`) - deshalb eigener Code
+  (`MedusaAdminClient`/`AdminExportController`). Eine Zeile pro noch nicht abgeholter
+  Pickup-Position (Bestellnummer, Name, Produkt, Größe) - sobald eine Position im Medusa
+  Admin als erfüllt markiert wird (nach Übergabe auf dem Festival), verschwindet sie beim
+  nächsten Export von selbst.
+
+  Braucht einen Medusa **Secret API Key** (Admin Dashboard: Settings → API Key Management →
+  Secret API Keys - nicht den Publishable Key, der ist store-seitig und reicht dafür nicht)
+  als `MEDUSA_ADMIN_API_KEY`. Secret API Keys akzeptiert Medusa ausschließlich per HTTP Basic
+  Auth, nicht als Bearer-Token (verifiziert gegen `@medusajs/framework`s
+  `authenticate-middleware.js`) - `MedusaAdminClient` setzt den Header dafür schon richtig.

@@ -12,6 +12,9 @@ services:
       MEDUSA_ADMIN_URL: ${MEDUSA_ADMIN_URL:-https://shop-admin.heimfeld.life/app}
       MEDUSA_PUBLISHABLE_API_KEY: ${MEDUSA_PUBLISHABLE_API_KEY:-}
       MEDUSA_DEFAULT_COUNTRY_CODE: ${MEDUSA_DEFAULT_COUNTRY_CODE:-de}
+      # Secret API Key (Admin Dashboard: Settings > API Key Management), only needed for
+      # the Abholliste CSV export - see MedusaAdminClient.
+      MEDUSA_ADMIN_API_KEY: ${MEDUSA_ADMIN_API_KEY:-}
       # Where goa_webapp's GET /api/branding is fetched from (colors/fonts/background/logo
       # of the currently active edition) - fetched live at startup and every
       # BRANDING_REFRESH_INTERVAL_MS afterwards, see GoaWebappBrandingClient. Defaults to
