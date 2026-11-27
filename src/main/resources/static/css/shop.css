@@ -91,6 +91,10 @@ h2 { font-size: clamp(1.65rem, 2.7vw, 2.25rem); }
 .detail-price { margin: .25rem 0 1.2rem; }
 .detail-price .price { font-size: 1.5rem; }
 .order-note { display: grid; gap: .15rem; padding-left: .8rem; border-left: 3px solid var(--color-heading); margin-bottom: 1.4rem; }
+.product-meta { display: grid; gap: .3rem; margin: 0 0 1.4rem; font-size: .9rem; }
+.product-meta div { display: flex; gap: .4rem; }
+.product-meta dt { margin: 0; color: var(--color-muted, #666); }
+.product-meta dd { margin: 0; }
 .purchase-form fieldset { border: 0; margin: 0 0 1rem; padding: 0; min-width: 0; }
 .purchase-form legend { padding: 0; margin: 0 0 .55rem; font-weight: 700; }
 .choice { position: relative; display: grid; min-width: 0; }

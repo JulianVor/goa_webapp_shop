@@ -30,8 +30,29 @@
             </div>
             <div class="order-note" th:if="${product.isPreorder() or product.isPickupOnly()}">
                 <strong th:if="${product.isPreorder()}">Vorbestellung<span th:if="${product.preorderDeadline() != null}" th:text="| bis ${product.preorderDeadlineFormatted()}|"></span></strong>
-                <span th:if="${product.isPickupOnly()}">Nur Abholung auf dem Festival</span>
+                <span th:if="${product.isPickupOnly()}">
+                    Nur Abholung auf dem Festival<span th:if="${product.pickupPeriodFormatted() != null}" th:text="| (${product.pickupPeriodFormatted()})|"></span>
+                </span>
             </div>
+            <dl class="product-meta" th:if="${product.material() != null or product.manufacturer() != null or !#lists.isEmpty(variants)}">
+                <div th:if="${product.material() != null}">
+                    <dt>Material</dt>
+                    <dd th:text="${product.material()}">Material</dd>
+                </div>
+                <div th:if="${product.manufacturer() != null}">
+                    <dt>Hersteller</dt>
+                    <dd th:text="${product.manufacturer()}">Hersteller</dd>
+                </div>
+                <div th:if="${single and variants[0].sku() != null}">
+                    <dt>Artikelnummer</dt>
+                    <dd th:text="${variants[0].sku()}">SKU</dd>
+                </div>
+                <div th:unless="${single}">
+                    <dt>Artikelnummer</dt>
+                    <dd id="initial-sku" hidden>Bitte Variante wählen</dd>
+                    <dd th:each="variant : ${variants}" th:if="${variant.sku() != null}" th:attr="data-sku-for=${variant.id()}" hidden th:text="${variant.sku()}"></dd>
+                </div>
+            </dl>
             <form class="purchase-form" th:unless="${#lists.isEmpty(variants)}" th:action="@{/warenkorb/hinzufuegen}" method="post">
                 <fieldset th:if="${!single or variants[0].hasDisplayTitle()}">
                     <legend th:text="${product.variantLabel()}">Größe</legend>
