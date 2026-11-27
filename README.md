@@ -202,3 +202,50 @@ genauso für `SHOP_DB_USER`/`SHOP_DB_NAME`.
 - **Produkte anlegen**: passiert ausschließlich im Medusa Admin Dashboard, nicht hier.
 - Wartungsmodus ist standardmäßig **an** - im eigenen Admin-Bereich ausschalten, sobald
   Produkte in Medusa stehen.
+
+## Rechtskonformität (DE/EU)
+
+Umgesetzt für den Verkaufsstart (siehe das Analyse-Dokument "Rechtskonformität
+Festivalshop" für den vollständigen Hintergrund):
+
+- **Checkout**: finaler Button heißt "Zahlungspflichtig bestellen" (§312j BGB), eine
+  Pflicht-Checkbox "Ich akzeptiere die AGB ..." (mit Links zu AGB/Widerrufsbelehrung)
+  muss angehakt sein, bevor der Browser das Zahlungsformular überhaupt absendet. Unter
+  **Admin → Einstellungen → Versand & Checkout-Hinweise** lässt sich ein Hinweistext zu
+  Lieferbeschränkungen/Zahlungsmitteln pflegen, der am Anfang des Checkouts erscheint.
+- **Verkäuferdaten**: strukturierte Felder (Firmenname, Anschrift, Rücksende-E-Mail)
+  unter **Admin → Einstellungen → Verkäuferdaten** - werden ins Muster-Widerrufsformular
+  und die Bestellbestätigungsmail eingesetzt, statt nur im Impressum-Fließtext zu stehen.
+- **Rechtstext-Versionierung**: `ShopSettingsService` zählt beim Speichern automatisch
+  eine Versionsnummer + Datum hoch, sobald sich AGB- oder Widerruf-Text ändern
+  (`ShopSettings.agbVersion`/`widerrufVersion` + die zugehörigen `*VersionDate`-Felder).
+  Jede Bestellbestätigungsmail zeigt, welche Fassung zum Bestellzeitpunkt galt.
+- **Elektronischer Widerruf** (§356a BGB, Pflicht seit 19.06.2026): öffentliches Formular
+  unter `/widerruf-erklaeren` (Name, Bestellreferenz, E-Mail, optionale Notiz) - legt einen
+  `WithdrawalRequest`-Datensatz an, schickt sofort eine Bestätigung an die Kundin/den
+  Kunden (mit allen Angaben zur eigenen Dokumentation) und eine Benachrichtigung an
+  `contactEmail`. Dauerhafter Footer-Link "Vertrag widerrufen". Unter **Admin →
+  Widerrufe** (`/admin/widerrufe`) gibt es die Worklist mit manuellem Status-Umschalter
+  (neu/bearbeitet) - die eigentliche Stornierung/Rückerstattung passiert bewusst manuell
+  im Medusa Admin + Stripe Dashboard, nicht automatisiert (Medusa bleibt vanilla, siehe
+  Architektur oben).
+- **Bestellbestätigungsmail**: hängt unterhalb des admin-editierbaren Textes automatisch
+  einen festen Block an (Verkäuferangaben, Zahlungsstatus, vollständiger AGB- und
+  Widerrufsbelehrungstext inkl. Versionsstand, Muster-Widerrufsformular) - siehe
+  `OrderMailService.legalFooterHtml()`. Für einen absoluten Link zur elektronischen
+  Widerrufserklärung in der Mail `SHOP_BASE_URL` setzen (sonst wird der Link weggelassen).
+- **Muster-Widerrufsformular**: eigene Seite `/muster-widerrufsformular` mit dem
+  gesetzlichen Text und den strukturierten Verkäuferdaten eingesetzt.
+- **"Versand und Abholung"**: eigene Seite `/versand-und-abholung` mit live aus Medusa
+  geladenen Versandoptionen (Preis) plus Admin-Freitext für Lieferzeiten/Abholinfo
+  (**Admin → Einstellungen → Versand & Checkout-Hinweise**).
+- **Produktseite**: zeigt SKU/Artikelnummer (natives Medusa-Variantenfeld `sku`) und
+  Material/Hersteller aus Metadata (`metadata.material`/`metadata.manufacturer`), sowie
+  bei `pickup_only`-Produkten einen konkreten Abholzeitraum statt nur des Badges, wenn
+  `metadata.pickup_start`/`pickup_end` gesetzt sind (gleiches Metadata-Prinzip wie
+  `preorder`/`preorder_deadline`/`pickup_only` oben).
+- **Bewusst nicht umgesetzt** (siehe Analyse-Dokument für die Begründung): kein
+  Preishistorie-Feature für öffentliche Rabattaktionen (aktuell nicht geplant, siehe
+  offene Fragen dort), keine automatisierte PDF-Rechnungserstellung, kein eigener
+  Medusa-Endpunkt für den Widerruf, kein Cookie-Banner (kein nicht-essenzielles Tracking
+  im Shop gefunden).
