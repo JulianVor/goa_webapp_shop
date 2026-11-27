@@ -11,7 +11,12 @@ import java.util.Map;
  * order mirror.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record MedusaAdminOrder(Long display_id, String email, Address shipping_address, List<Item> items) {
+public record MedusaAdminOrder(Long display_id, String email, String status, Address shipping_address, List<Item> items) {
+
+    /** Medusa's OrderStatus: "pending"|"completed"|"draft"|"archived"|"canceled"|"requires_action". */
+    public boolean isCanceled() {
+        return "canceled".equals(status);
+    }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Address(String first_name, String last_name) {

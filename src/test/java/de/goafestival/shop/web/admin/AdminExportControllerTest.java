@@ -56,6 +56,20 @@ class AdminExportControllerTest {
     }
 
     @Test
+    void excludesCanceledOrdersEvenWithOutstandingPickupItems() throws Exception {
+        when(medusaAdminClient.isEnabled()).thenReturn(true);
+        when(medusaAdminClient.listAllOrders()).thenReturn(List.of(
+                order(8L, "Max", "Mustermann", "max@example.com", "canceled", List.of(
+                        item("Goa 2026 T-Shirt", "M", 1, 0, true)))));
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        controller.abholungCsv(response);
+
+        String csv = response.getContentAsString(StandardCharsets.UTF_8);
+        assertFalse(csv.contains("Max Mustermann"), "stornierte Bestellung sollte nicht auftauchen");
+    }
+
+    @Test
     void returns503WhenNoAdminApiKeyIsConfigured() throws Exception {
         when(medusaAdminClient.isEnabled()).thenReturn(false);
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -67,7 +81,12 @@ class AdminExportControllerTest {
 
     private static MedusaAdminOrder order(long displayId, String firstName, String lastName, String email,
                                            List<MedusaAdminOrder.Item> items) {
-        return new MedusaAdminOrder(displayId, email, new MedusaAdminOrder.Address(firstName, lastName), items);
+        return order(displayId, firstName, lastName, email, "pending", items);
+    }
+
+    private static MedusaAdminOrder order(long displayId, String firstName, String lastName, String email,
+                                           String status, List<MedusaAdminOrder.Item> items) {
+        return new MedusaAdminOrder(displayId, email, status, new MedusaAdminOrder.Address(firstName, lastName), items);
     }
 
     private static MedusaAdminOrder.Item item(String productTitle, String variantTitle, int quantity,

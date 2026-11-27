@@ -55,7 +55,7 @@ public class MedusaAdminClient {
                             .queryParam("limit", limit)
                             .queryParam("offset", currentOffset)
                             .queryParam("order", "id")
-                            .queryParam("fields", "display_id,email,shipping_address.first_name,"
+                            .queryParam("fields", "display_id,email,status,shipping_address.first_name,"
                                     + "shipping_address.last_name,items.product_title,items.variant_title,"
                                     + "items.quantity,items.detail.fulfilled_quantity,items.product.metadata")
                             .build())

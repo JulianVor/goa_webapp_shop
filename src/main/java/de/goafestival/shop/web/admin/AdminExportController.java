@@ -30,7 +30,8 @@ public class AdminExportController {
     /**
      * One row per still-outstanding pickup item (not per order - a mixed order with two sizes
      * needs two rows): Bestellnummer, Name, Produkt, Größe. An item drops off this list on its
-     * own once an admin marks it fulfilled in the Medusa Admin after handing it over.
+     * own once an admin marks it fulfilled in the Medusa Admin after handing it over - or if the
+     * whole order gets canceled, which is excluded here too (nothing to hand over for it).
      */
     @GetMapping("/abholung.csv")
     public void abholungCsv(HttpServletResponse response) throws IOException {
@@ -50,7 +51,7 @@ public class AdminExportController {
         writer.write('﻿');
         writer.write("Bestellnummer;Name;Produkt;Größe\n");
         for (MedusaAdminOrder order : medusaAdminClient.listAllOrders()) {
-            if (order.items() == null) {
+            if (order.isCanceled() || order.items() == null) {
                 continue;
             }
             for (MedusaAdminOrder.Item item : order.items()) {
