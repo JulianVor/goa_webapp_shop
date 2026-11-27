@@ -43,6 +43,14 @@ public class AdminSettingsController {
         form.setDatenschutzText(settings.getDatenschutzText());
         form.setContactEmail(settings.getContactEmail());
         form.setTestAccessEnabled(settings.isTestAccessEnabled());
+        form.setCompanyName(settings.getCompanyName());
+        form.setCompanyStreet(settings.getCompanyStreet());
+        form.setCompanyPostalCode(settings.getCompanyPostalCode());
+        form.setCompanyCity(settings.getCompanyCity());
+        form.setCompanyCountry(settings.getCompanyCountry());
+        form.setReturnEmail(settings.getReturnEmail());
+        form.setShippingInfoText(settings.getShippingInfoText());
+        form.setDeliveryPaymentNotice(settings.getDeliveryPaymentNotice());
         return form;
     }
 }
