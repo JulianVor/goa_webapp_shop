@@ -10,37 +10,8 @@
         <span th:if="${contactEmail}" th:text="${contactEmail}">kontakt@example.com</span>
     </p>
 
-    <h3 style="margin:1em 0 0.3em;">Allgemeine Geschäftsbedingungen</h3>
-    <div th:utext="${agbText}">AGB-Text</div>
-    <p style="color:#777777;">
-        Stand: Version <span th:text="${agbVersion}">1</span><span th:if="${agbVersionDate}" th:text="' vom ' + ${agbVersionDate}"></span>
-        - es gilt die zum Bestellzeitpunkt gültige Fassung.
-    </p>
-
-    <h3 style="margin:1em 0 0.3em;">Widerrufsbelehrung</h3>
-    <div th:utext="${widerrufText}">Widerrufsbelehrung</div>
-    <p style="color:#777777;">
-        Stand: Version <span th:text="${widerrufVersion}">1</span><span th:if="${widerrufVersionDate}" th:text="' vom ' + ${widerrufVersionDate}"></span>
-        - es gilt die zum Bestellzeitpunkt gültige Fassung.
-    </p>
-
-    <h3 style="margin:1em 0 0.3em;">Muster-Widerrufsformular</h3>
-    <p><em>(Wenn Sie den Vertrag widerrufen wollen, dann füllen Sie bitte dieses Formular aus und senden Sie es zurück, oder nutzen Sie die elektronische Widerrufserklärung<span th:if="${widerrufErklaerenUrl}"> unter <span th:text="${widerrufErklaerenUrl}"></span></span>.)</em></p>
     <p>
-        An<br/>
-        <span th:if="${companyName}" th:text="${companyName}">Firma</span><br/>
-        <span th:if="${companyStreet}" th:text="${companyStreet}">Straße</span><br/>
-        <span th:text="${companyPostalCode} + ' ' + ${companyCity}">PLZ Ort</span><br/>
-        <span th:if="${companyCountry}" th:text="${companyCountry}">Land</span>
+        Die vollständigen AGB, die Widerrufsbelehrung und das Muster-Widerrufsformular findest
+        du als PDF im Anhang dieser E-Mail.
     </p>
-    <p>
-        Hiermit widerrufe(n) ich/wir (*) den von mir/uns (*) abgeschlossenen Vertrag über den Kauf
-        der folgenden Waren (*)/die Erbringung der folgenden Dienstleistung (*)<br/>
-        Bestellt am (*)/erhalten am (*):<br/>
-        Name des/der Verbraucher(s):<br/>
-        Anschrift des/der Verbraucher(s):<br/>
-        Unterschrift des/der Verbraucher(s) (nur bei Mitteilung auf Papier):<br/>
-        Datum:
-    </p>
-    <p style="color:#777777;"><small>(*) Unzutreffendes streichen.</small></p>
 </div>

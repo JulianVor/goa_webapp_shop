@@ -5,8 +5,11 @@ import de.goafestival.shop.service.ShopSettingsService;
 import de.goafestival.shop.service.branding.Branding;
 import de.goafestival.shop.service.branding.GoaWebappBrandingClient;
 import de.goafestival.shop.service.medusa.dto.MedusaCompleteCartResult;
+import de.goafestival.shop.service.pdf.LegalDocumentPdfService;
+import jakarta.mail.BodyPart;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 import org.junit.jupiter.api.Test;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -30,6 +33,7 @@ class OrderMailServiceTest {
     private final ITemplateEngine templateEngine = mock(ITemplateEngine.class);
     private final GoaWebappBrandingClient brandingClient = mock(GoaWebappBrandingClient.class);
     private final ShopSettingsService shopSettingsService = mock(ShopSettingsService.class);
+    private final LegalDocumentPdfService legalDocumentPdfService = mock(LegalDocumentPdfService.class);
 
     @Test
     void doesNothingWithoutMailHostConfigured() {
@@ -37,7 +41,7 @@ class OrderMailServiceTest {
 
         service.sendOrderConfirmation(order());
 
-        verifyNoInteractions(mailSender, templateEngine, brandingClient, shopSettingsService);
+        verifyNoInteractions(mailSender, templateEngine, brandingClient, shopSettingsService, legalDocumentPdfService);
     }
 
     @Test
@@ -48,12 +52,13 @@ class OrderMailServiceTest {
         service.sendOrderConfirmation(new MedusaCompleteCartResult.Order(
                 "order_1", 1001L, null, BigDecimal.TEN, BigDecimal.ZERO, "eur", List.of()));
 
-        verifyNoInteractions(mailSender, templateEngine, brandingClient, shopSettingsService);
+        verifyNoInteractions(mailSender, templateEngine, brandingClient, shopSettingsService, legalDocumentPdfService);
     }
 
     @Test
     void sendsTheConfirmationWhenConfigured() throws Exception {
         OrderMailService service = service("smtp-relay.brevo.com");
+        stubPdfs();
         when(shopSettingsService.get()).thenReturn(new ShopSettings());
         when(brandingClient.current()).thenReturn(fallbackBranding());
         when(templateEngine.process(eq("email/order-confirmation-email"), any())).thenReturn("<html></html>");
@@ -73,6 +78,7 @@ class OrderMailServiceTest {
         ShopSettings settings = new ShopSettings();
         settings.setOrderConfirmationSubject("Danke für Bestellung {{bestellnummer}}!");
         settings.setOrderConfirmationBody("<p>Nr. {{bestellnummer}}</p>");
+        stubPdfs();
         when(shopSettingsService.get()).thenReturn(settings);
         when(brandingClient.current()).thenReturn(fallbackBranding());
         when(templateEngine.process(eq("email/order-confirmation-email"), any())).thenReturn("<html></html>");
@@ -89,6 +95,7 @@ class OrderMailServiceTest {
         OrderMailService service = service("smtp-relay.brevo.com");
         ShopSettings settings = new ShopSettings();
         settings.setOrderConfirmationBody("<p>{{bestellungen}}</p>");
+        stubPdfs();
         when(shopSettingsService.get()).thenReturn(settings);
         when(brandingClient.current()).thenReturn(fallbackBranding());
         when(templateEngine.process(eq("email/order-items-table"), any())).thenReturn("<table>rows</table>");
@@ -105,6 +112,7 @@ class OrderMailServiceTest {
         OrderMailService service = service("smtp-relay.brevo.com");
         ShopSettings settings = new ShopSettings();
         settings.setOrderConfirmationBody("<p>{{bestellungen}}</p>");
+        stubPdfs();
         when(shopSettingsService.get()).thenReturn(settings);
         when(brandingClient.current()).thenReturn(fallbackBranding());
         when(templateEngine.process(eq("email/order-confirmation-email"), any())).thenReturn("<html></html>");
@@ -116,8 +124,32 @@ class OrderMailServiceTest {
     }
 
     @Test
+    void attachesTheThreeLegalPdfsToTheConfirmationMail() throws Exception {
+        OrderMailService service = service("smtp-relay.brevo.com");
+        stubPdfs();
+        when(shopSettingsService.get()).thenReturn(new ShopSettings());
+        when(brandingClient.current()).thenReturn(fallbackBranding());
+        when(templateEngine.process(eq("email/order-confirmation-email"), any())).thenReturn("<html></html>");
+        MimeMessage message = new MimeMessage(Session.getDefaultInstance(new Properties()));
+        when(mailSender.createMimeMessage()).thenReturn(message);
+
+        service.sendOrderConfirmation(order());
+
+        MimeMultipart content = (MimeMultipart) message.getContent();
+        List<String> attachmentNames = new java.util.ArrayList<>();
+        for (int i = 0; i < content.getCount(); i++) {
+            BodyPart part = content.getBodyPart(i);
+            if (part.getFileName() != null) {
+                attachmentNames.add(part.getFileName());
+            }
+        }
+        assertEquals(List.of("AGB.pdf", "Widerrufsbelehrung.pdf", "Muster-Widerrufsformular.pdf"), attachmentNames);
+    }
+
+    @Test
     void aMailSendFailureIsSwallowedNotPropagated() {
         OrderMailService service = service("smtp-relay.brevo.com");
+        stubPdfs();
         when(shopSettingsService.get()).thenReturn(new ShopSettings());
         when(brandingClient.current()).thenReturn(fallbackBranding());
         when(templateEngine.process(anyString(), any())).thenReturn("<html></html>");
@@ -132,12 +164,13 @@ class OrderMailServiceTest {
         OrderMailService service = service(/* mailHost */ "");
 
         assertThrows(IllegalStateException.class, service::sendTestMail);
-        verifyNoInteractions(mailSender, templateEngine, brandingClient, shopSettingsService);
+        verifyNoInteractions(mailSender, templateEngine, brandingClient, shopSettingsService, legalDocumentPdfService);
     }
 
     @Test
     void sendTestMailSendsToTheConfiguredFromAddressAndReturnsIt() throws Exception {
         OrderMailService service = service("smtp-relay.brevo.com");
+        stubPdfs();
         when(shopSettingsService.get()).thenReturn(new ShopSettings());
         when(brandingClient.current()).thenReturn(fallbackBranding());
         when(templateEngine.process(anyString(), any())).thenReturn("<html></html>");
@@ -154,6 +187,7 @@ class OrderMailServiceTest {
     @Test
     void sendTestMailThrowsWithTheRootCauseMessageOnFailure() {
         OrderMailService service = service("smtp-relay.brevo.com");
+        stubPdfs();
         when(shopSettingsService.get()).thenReturn(new ShopSettings());
         when(brandingClient.current()).thenReturn(fallbackBranding());
         when(templateEngine.process(anyString(), any())).thenReturn("<html></html>");
@@ -169,7 +203,14 @@ class OrderMailServiceTest {
 
     private OrderMailService service(String mailHost) {
         return new OrderMailService(mailSender, templateEngine, brandingClient, shopSettingsService,
-                "bestellung@example.com", "login@example.com", mailHost, "");
+                legalDocumentPdfService, "bestellung@example.com", "login@example.com", mailHost);
+    }
+
+    /** Only the tests that actually reach attachLegalPdfs need this - see its callers. */
+    private void stubPdfs() {
+        when(legalDocumentPdfService.agbPdf()).thenReturn("AGB".getBytes());
+        when(legalDocumentPdfService.widerrufPdf()).thenReturn("Widerruf".getBytes());
+        when(legalDocumentPdfService.musterWiderrufsformularPdf()).thenReturn("Formular".getBytes());
     }
 
     private static MedusaCompleteCartResult.Order order() {

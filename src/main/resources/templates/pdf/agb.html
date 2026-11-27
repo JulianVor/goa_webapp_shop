@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <th:block th:replace="~{pdf/pdf-style :: style}"></th:block>
+</head>
+<body>
+<div th:replace="~{pdf/seller-block :: seller-block}"></div>
+<h1>Allgemeine Geschäftsbedingungen</h1>
+<div th:utext="${agbText}">AGB-Text</div>
+<p class="version-note">
+    Stand: Version <span th:text="${agbVersion}">1</span><span th:if="${agbVersionDate}" th:text="' vom ' + ${agbVersionDate}"></span>
+    - es gilt die zum Bestellzeitpunkt gültige Fassung.
+</p>
+</body>
+</html>

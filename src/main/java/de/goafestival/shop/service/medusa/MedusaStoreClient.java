@@ -110,6 +110,39 @@ public class MedusaStoreClient {
                 .product();
     }
 
+    /**
+     * Every product/variant with a current price, for PriceHistoryService's daily price
+     * tracking - unlike listProducts() (capped at 20, meant for the homepage), this pages
+     * through Medusa's /store/products until exhausted so every variant actually gets tracked.
+     */
+    public List<MedusaProduct> listAllProductsForPriceTracking() {
+        MedusaRegion region = defaultRegion();
+        List<MedusaProduct> all = new java.util.ArrayList<>();
+        int limit = 100;
+        int offset = 0;
+        while (true) {
+            int currentOffset = offset;
+            List<MedusaProduct> page = restClient.get()
+                    .uri(uriBuilder -> uriBuilder.path("/store/products")
+                            .queryParam("region_id", region.id())
+                            .queryParam("limit", limit)
+                            .queryParam("offset", currentOffset)
+                            .build())
+                    .retrieve()
+                    .body(ProductsResponse.class)
+                    .products();
+            if (page == null || page.isEmpty()) {
+                break;
+            }
+            all.addAll(page);
+            if (page.size() < limit) {
+                break;
+            }
+            offset += limit;
+        }
+        return all;
+    }
+
     public MedusaCart createCart() {
         MedusaRegion region = defaultRegion();
         return restClient.post()

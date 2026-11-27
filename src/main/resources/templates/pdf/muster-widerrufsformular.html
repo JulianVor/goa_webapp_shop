@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <th:block th:replace="~{pdf/pdf-style :: style}"></th:block>
+</head>
+<body>
+<h1>Muster-Widerrufsformular</h1>
+<p><em>(Wenn Sie den Vertrag widerrufen wollen, dann füllen Sie bitte dieses Formular aus und senden Sie es zurück.)</em></p>
+<p>
+    An<br/>
+    <span th:if="${companyName}" th:text="${companyName}">Firma</span><br/>
+    <span th:if="${companyStreet}" th:text="${companyStreet}">Straße</span><br/>
+    <span th:text="${companyPostalCode} + ' ' + ${companyCity}">PLZ Ort</span><br/>
+    <span th:if="${companyCountry}" th:text="${companyCountry}">Land</span><br/>
+    <span th:if="${contactEmail}" th:text="${contactEmail}">kontakt@example.com</span>
+</p>
+<p>
+    Hiermit widerrufe(n) ich/wir (*) den von mir/uns (*) abgeschlossenen Vertrag über den Kauf
+    der folgenden Waren (*)/die Erbringung der folgenden Dienstleistung (*)
+</p>
+<p>Bestellt am (*)/erhalten am (*):</p>
+<p>Name des/der Verbraucher(s):</p>
+<p>Anschrift des/der Verbraucher(s):</p>
+<p>Unterschrift des/der Verbraucher(s) (nur bei Mitteilung auf Papier):</p>
+<p>Datum:</p>
+<p class="version-note">(*) Unzutreffendes streichen.</p>
+</body>
+</html>

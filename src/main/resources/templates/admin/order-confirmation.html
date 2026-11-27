@@ -29,10 +29,10 @@
                 mit den bestellten Artikeln, Mengen, Preisen und der Gesamtsumme.
             </p>
             <p class="field-hint">
-                Unterhalb deines Textes hängt die Mail automatisch einen festen Block mit Verkäuferangaben,
-                Zahlungsstatus, dem vollständigen AGB- und Widerrufsbelehrungstext (aus
-                <a th:href="@{/admin/settings}">Einstellungen</a>) und dem Muster-Widerrufsformular an - das
-                musst du hier nicht selbst eintippen.
+                Unterhalb deines Textes hängt die Mail automatisch einen festen Block mit Verkäuferangaben
+                und Zahlungsstatus an. AGB, Widerrufsbelehrung und Muster-Widerrufsformular (aus
+                <a th:href="@{/admin/settings}">Einstellungen</a>) werden zusätzlich automatisch als PDF
+                erzeugt und der Mail als Anhang beigefügt - das musst du hier nicht selbst eintippen.
             </p>
             <label>Betreff<input type="text" th:field="*{subject}" required="required"/></label>
 
@@ -112,8 +112,8 @@
         var sampleItemsTable = '<div style="border:1px dashed #999999;border-radius:8px;padding:10px 14px;'
             + 'color:#666666;font-size:13px;margin:0 0 1.25em;">[Bestellübersicht: Artikel, Menge, Preise, Gesamtsumme]</div>';
         var sampleLegalFooter = '<div style="border:1px dashed #999999;border-radius:8px;padding:10px 14px;'
-            + 'color:#666666;font-size:13px;margin-top:1.5em;">[Verkäuferangaben, Zahlungsstatus, AGB, Widerrufsbelehrung, '
-            + 'Muster-Widerrufsformular - wird automatisch angehängt]</div>';
+            + 'color:#666666;font-size:13px;margin-top:1.5em;">[Verkäuferangaben, Zahlungsstatus - wird automatisch '
+            + 'angehängt. AGB, Widerrufsbelehrung und Muster-Widerrufsformular kommen zusätzlich als PDF-Anhang.]</div>';
 
         function updateLivePreview() {
             var doc = livePreviewFrame.contentDocument;

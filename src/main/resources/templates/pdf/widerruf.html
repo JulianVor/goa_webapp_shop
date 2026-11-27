@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <th:block th:replace="~{pdf/pdf-style :: style}"></th:block>
+</head>
+<body>
+<div th:replace="~{pdf/seller-block :: seller-block}"></div>
+<h1>Widerrufsbelehrung</h1>
+<div th:utext="${widerrufText}">Widerrufsbelehrung</div>
+<p class="version-note">
+    Stand: Version <span th:text="${widerrufVersion}">1</span><span th:if="${widerrufVersionDate}" th:text="' vom ' + ${widerrufVersionDate}"></span>
+    - es gilt die zum Bestellzeitpunkt gültige Fassung.
+</p>
+<p th:if="${widerrufErklaerenUrl}">
+    Schneller geht's elektronisch: <span th:text="${widerrufErklaerenUrl}"></span>
+</p>
+</body>
+</html>

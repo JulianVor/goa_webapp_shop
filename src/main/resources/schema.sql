@@ -29,3 +29,11 @@ CREATE TABLE IF NOT EXISTS withdrawal_request (
     received_at timestamp,
     status varchar(255)
 );
+
+CREATE TABLE IF NOT EXISTS price_observation (
+    id bigserial PRIMARY KEY,
+    variant_id varchar(255),
+    amount numeric(19, 2),
+    currency_code varchar(255),
+    observed_at timestamp
+);

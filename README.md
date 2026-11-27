@@ -230,10 +230,15 @@ Festivalshop" für den vollständigen Hintergrund):
   im Medusa Admin + Stripe Dashboard, nicht automatisiert (Medusa bleibt vanilla, siehe
   Architektur oben).
 - **Bestellbestätigungsmail**: hängt unterhalb des admin-editierbaren Textes automatisch
-  einen festen Block an (Verkäuferangaben, Zahlungsstatus, vollständiger AGB- und
-  Widerrufsbelehrungstext inkl. Versionsstand, Muster-Widerrufsformular) - siehe
-  `OrderMailService.legalFooterHtml()`. Für einen absoluten Link zur elektronischen
-  Widerrufserklärung in der Mail `SHOP_BASE_URL` setzen (sonst wird der Link weggelassen).
+  einen festen Block an (Verkäuferangaben, Zahlungsstatus - siehe
+  `OrderMailService.legalFooterHtml()`). AGB, Widerrufsbelehrung und Muster-Widerrufsformular
+  kommen zusätzlich als eigene PDF-Dateien im Anhang, live aus dem admin-gepflegten Text
+  und den Versionsständen erzeugt (`LegalDocumentPdfService`, per openhtmltopdf+jsoup -
+  das rich-text-editor-HTML ist nicht zwingend wohlgeformtes XML, jsoup räumt es vorher auf).
+  Für einen absoluten Link zur elektronischen Widerrufserklärung in der Widerrufsbelehrung-PDF
+  `SHOP_BASE_URL` setzen (sonst wird der Link weggelassen). Die Docker-Runtime braucht dafür
+  mindestens eine echte Schriftart (`fontconfig`/`ttf-dejavu` im Dockerfile) - Alpine liefert
+  von Haus aus keine mit, und PDFBox braucht eine zur Glyphen-Substitution.
 - **Muster-Widerrufsformular**: eigene Seite `/muster-widerrufsformular` mit dem
   gesetzlichen Text und den strukturierten Verkäuferdaten eingesetzt.
 - **"Versand und Abholung"**: eigene Seite `/versand-und-abholung` mit live aus Medusa
@@ -244,8 +249,25 @@ Festivalshop" für den vollständigen Hintergrund):
   bei `pickup_only`-Produkten einen konkreten Abholzeitraum statt nur des Badges, wenn
   `metadata.pickup_start`/`pickup_end` gesetzt sind (gleiches Metadata-Prinzip wie
   `preorder`/`preorder_deadline`/`pickup_only` oben).
-- **Bewusst nicht umgesetzt** (siehe Analyse-Dokument für die Begründung): kein
-  Preishistorie-Feature für öffentliche Rabattaktionen (aktuell nicht geplant, siehe
-  offene Fragen dort), keine automatisierte PDF-Rechnungserstellung, kein eigener
-  Medusa-Endpunkt für den Widerruf, kein Cookie-Banner (kein nicht-essenzielles Tracking
-  im Shop gefunden).
+- **Bewusst nicht umgesetzt** (siehe Analyse-Dokument für die Begründung): keine
+  automatisierte PDF-Rechnungserstellung, kein eigener Medusa-Endpunkt für den Widerruf,
+  kein Cookie-Banner (kein nicht-essenzielles Tracking im Shop gefunden).
+- **Preishistorie für "X % reduziert"-Badges** (§11 PAngV): Der Shop führt eine eigene,
+  von Medusas Price Lists unabhängige Preishistorie (`PriceObservation`/
+  `PriceHistoryService`) - Medusas eigenes "original_amount" ist nur, was ein Admin
+  eingetragen hat, kein Beleg dafür, dass dieser Preis je tatsächlich verlangt wurde, und
+  taugt daher allein nicht als rechtssicherer Vergleichspreis. Einmal täglich (und sofort
+  beim Start) wird für jede Variante der aktuelle Preis geloggt, aber nur wenn er sich seit
+  dem letzten Log-Eintrag geändert hat. Die "−X %"-Badge auf Produktkarte/Produktseite
+  erscheint nur noch, wenn der aktuelle Preis **nachweislich unter dem niedrigsten in den
+  letzten 30 Tagen tatsächlich im Shop verlangten Preis** liegt (`PriceDisplay`,
+  `PriceHistoryService.lowestPriceLast30Days`) - nicht mehr automatisch, sobald in Medusa
+  eine Price List mit höherem "original_amount" hinterlegt ist.
+  **Konkrete Folge:** Für ein Produkt, das im Shop selbst nie zu einem höheren Preis
+  gelistet war (z.B. nur vor Ort beim Festival teurer verkauft, nie online), verschwindet
+  die Badge direkt nach diesem Deploy - es gibt noch keine echte, im Shop nachverfolgte
+  Preissenkung, auf die sie sich stützen könnte. Sobald ein Preis im Shop echt einmal
+  angehoben und wieder gesenkt wird, erscheint die Badge automatisch und korrekt wieder,
+  ganz ohne Admin-Eingriff - einfach den Preis in Medusa ändern. Es gibt aktuell keine
+  Admin-Oberfläche, um die geloggte Preishistorie selbst einzusehen (nur in der Datenbank,
+  Tabelle `price_observation`).

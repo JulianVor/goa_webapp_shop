@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div class="seller-block" th:fragment="seller-block">
+    <span th:if="${companyName}" th:text="${companyName}">Firma</span><br/>
+    <span th:if="${companyStreet}" th:text="${companyStreet}">Straße</span><br/>
+    <span th:if="${companyPostalCode} or ${companyCity}" th:text="${companyPostalCode} + ' ' + ${companyCity}">PLZ Ort</span><br/>
+    <span th:if="${companyCountry}" th:text="${companyCountry}">Land</span><br/>
+    <span th:if="${contactEmail}" th:text="${contactEmail}">kontakt@example.com</span>
+</div>
+</body>
+</html>

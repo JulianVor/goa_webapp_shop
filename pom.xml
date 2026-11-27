@@ -55,6 +55,22 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <!-- Renders the AGB/Widerrufsbelehrung/Muster-Widerrufsformular PDFs attached to the
+             order confirmation mail (see LegalDocumentPdfService) from the same admin-edited
+             HTML shown on the public legal pages. -->
+        <dependency>
+            <groupId>com.openhtmltopdf</groupId>
+            <artifactId>openhtmltopdf-pdfbox</artifactId>
+            <version>1.0.10</version>
+        </dependency>
+        <!-- Cleans up the admin-authored rich-text HTML (AGB/Widerruf) into well-formed XHTML
+             before handing it to openhtmltopdf, which needs valid XML - rich-text-editor output
+             isn't guaranteed to be. -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.24.1</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>

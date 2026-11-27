@@ -4,12 +4,12 @@
 <th:block th:fragment="amount(value, currency)"
           th:text="${#numbers.formatDecimal(value, 1, 'POINT', 2, 'COMMA')} + ' ' + ${#strings.equalsIgnoreCase(currency, 'EUR') ? '€' : #strings.toUpperCase(currency)}">20,00 €</th:block>
 <span class="price" th:fragment="price(price, from)">
-    <th:block th:if="${price != null and price.calculated_amount() != null}">
+    <th:block th:if="${price != null and price.amount() != null}">
         <span class="from" th:if="${from}">ab </span>
-        <strong><th:block th:replace="~{fragments/price :: amount(${price.calculated_amount()}, ${price.currency_code()})}"/></strong>
-        <del th:if="${price.isOnSale()}"><th:block th:replace="~{fragments/price :: amount(${price.original_amount()}, ${price.currency_code()})}"/></del>
+        <strong><th:block th:replace="~{fragments/price :: amount(${price.amount()}, ${price.currencyCode()})}"/></strong>
+        <del th:if="${price.isOnSale()}"><th:block th:replace="~{fragments/price :: amount(${price.referenceAmount()}, ${price.currencyCode()})}"/></del>
     </th:block>
-    <span th:if="${price == null or price.calculated_amount() == null}">Preis derzeit nicht verfügbar</span>
+    <span th:if="${price == null or price.amount() == null}">Preis derzeit nicht verfügbar</span>
 </span>
 </body>
 </html>
