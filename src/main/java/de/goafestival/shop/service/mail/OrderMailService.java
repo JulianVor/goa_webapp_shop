@@ -49,13 +49,15 @@ public class OrderMailService {
     private final ShopSettingsService shopSettingsService;
     private final String fromAddress;
     private final String mailHost;
+    private final String shopBaseUrl;
     private final boolean enabled;
 
     public OrderMailService(JavaMailSender mailSender, ITemplateEngine templateEngine,
                              GoaWebappBrandingClient brandingClient, ShopSettingsService shopSettingsService,
                              @Value("${app.mail.from:}") String configuredFrom,
                              @Value("${spring.mail.username:}") String mailUsername,
-                             @Value("${spring.mail.host:}") String mailHost) {
+                             @Value("${spring.mail.host:}") String mailHost,
+                             @Value("${app.shop.base-url:}") String shopBaseUrl) {
         this.mailSender = mailSender;
         this.templateEngine = templateEngine;
         this.brandingClient = brandingClient;
@@ -64,6 +66,7 @@ public class OrderMailService {
                 : !mailUsername.isBlank() ? mailUsername
                 : "bestellung@goa-festival.de";
         this.mailHost = mailHost;
+        this.shopBaseUrl = shopBaseUrl;
         this.enabled = !mailHost.isBlank();
     }
 
@@ -95,7 +98,8 @@ public class OrderMailService {
         Branding branding = brandingClient.current();
         String content = htmlBody
                 .replace(ORDER_NUMBER_PLACEHOLDER, "1001")
-                .replace(ORDER_ITEMS_PLACEHOLDER, itemsTableHtml(sampleOrder(), branding));
+                .replace(ORDER_ITEMS_PLACEHOLDER, itemsTableHtml(sampleOrder(), branding))
+                + legalFooterHtml();
         return renderEmailHtml(content, branding);
     }
 
@@ -121,7 +125,8 @@ public class OrderMailService {
             String subject = getConfirmationSubject().replace(ORDER_NUMBER_PLACEHOLDER, "TEST-1001") + " (Testmail)";
             String content = getConfirmationBody()
                     .replace(ORDER_NUMBER_PLACEHOLDER, "TEST-1001")
-                    .replace(ORDER_ITEMS_PLACEHOLDER, itemsTableHtml(sample, branding));
+                    .replace(ORDER_ITEMS_PLACEHOLDER, itemsTableHtml(sample, branding))
+                    + legalFooterHtml();
             String html = renderEmailHtml(content, branding);
 
             MimeMessage message = mailSender.createMimeMessage();
@@ -176,7 +181,8 @@ public class OrderMailService {
             String subject = getConfirmationSubject().replace(ORDER_NUMBER_PLACEHOLDER, orderNumber);
             String content = getConfirmationBody()
                     .replace(ORDER_NUMBER_PLACEHOLDER, orderNumber)
-                    .replace(ORDER_ITEMS_PLACEHOLDER, itemsTableHtml(order, branding));
+                    .replace(ORDER_ITEMS_PLACEHOLDER, itemsTableHtml(order, branding))
+                    + legalFooterHtml();
             String html = renderEmailHtml(content, branding);
 
             MimeMessage message = mailSender.createMimeMessage();
@@ -190,6 +196,34 @@ public class OrderMailService {
             log.warn("Bestellbestätigung an {} konnte nicht gesendet werden (Bestellung {})",
                     order.email(), order.display_id(), e);
         }
+    }
+
+    /**
+     * Fixed, non-admin-editable block appended after the admin's own body text: seller info,
+     * full AGB/Widerrufsbelehrung text (not just a link - both are only linked to from the
+     * admin-edited body otherwise), the Muster-Widerrufsformular, and the legal-text version
+     * each refers to (see ShopSettingsService's version bump on save) so it's traceable which
+     * fassung applied at order time. Deliberately built here rather than left for the admin to
+     * paste in - it must survive even if the admin never updates the body text again.
+     */
+    private String legalFooterHtml() {
+        ShopSettings settings = shopSettingsService.get();
+        Context context = new Context();
+        context.setVariable("paymentStatusText", "Zahlung erhalten.");
+        context.setVariable("companyName", settings.getCompanyName());
+        context.setVariable("companyStreet", settings.getCompanyStreet());
+        context.setVariable("companyPostalCode", settings.getCompanyPostalCode());
+        context.setVariable("companyCity", settings.getCompanyCity());
+        context.setVariable("companyCountry", settings.getCompanyCountry());
+        context.setVariable("contactEmail", settings.getContactEmail());
+        context.setVariable("agbText", settings.getAgbText());
+        context.setVariable("agbVersion", settings.getAgbVersion());
+        context.setVariable("agbVersionDate", settings.getAgbVersionDate());
+        context.setVariable("widerrufText", settings.getWiderrufText());
+        context.setVariable("widerrufVersion", settings.getWiderrufVersion());
+        context.setVariable("widerrufVersionDate", settings.getWiderrufVersionDate());
+        context.setVariable("widerrufErklaerenUrl", shopBaseUrl.isBlank() ? null : shopBaseUrl + "/widerruf-erklaeren");
+        return templateEngine.process("email/order-legal-footer", context);
     }
 
     /** Renders just the items/price table - empty if the order has no items to show. */

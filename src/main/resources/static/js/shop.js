@@ -39,6 +39,13 @@ if (form) {
         for (const price of document.querySelectorAll('[data-price-for]')) {
             price.hidden = price.dataset.priceFor !== selected?.value;
         }
+        const initialSku = document.getElementById('initial-sku');
+        if (initialSku) {
+            initialSku.hidden = Boolean(selected);
+            for (const sku of document.querySelectorAll('[data-sku-for]')) {
+                sku.hidden = sku.dataset.skuFor !== selected?.value;
+            }
+        }
     }
     form.addEventListener('change', showVariantPrice);
     window.addEventListener('pageshow', showVariantPrice);

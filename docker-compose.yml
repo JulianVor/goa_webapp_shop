@@ -38,6 +38,9 @@ services:
       MAIL_FROM: ${MAIL_FROM:-}
       MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH:-true}
       MAIL_SMTP_STARTTLS: ${MAIL_SMTP_STARTTLS:-true}
+      # Public URL of this storefront - only used to build an absolute link to the
+      # electronic Widerruf form inside outgoing mails (see OrderMailService).
+      SHOP_BASE_URL: ${SHOP_BASE_URL:-}
       THYMELEAF_CACHE: ${THYMELEAF_CACHE:-true}
     ports:
       - "${SHOP_APP_PORT:-8081}:8080"

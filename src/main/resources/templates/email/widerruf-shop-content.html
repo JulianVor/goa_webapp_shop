@@ -1,0 +1,26 @@
+<div xmlns:th="http://www.thymeleaf.org">
+    <p>Es ist eine neue Widerrufserklärung über den Festivalshop eingegangen.</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 1.25em;font-family:Arial,Helvetica,sans-serif;font-size:15px;">
+        <tr>
+            <td style="padding:4px 0;color:#666666;width:40%;">Eingegangen am</td>
+            <td style="padding:4px 0;" th:text="${receivedAtFormatted}">27.11.2026, 12:00 Uhr</td>
+        </tr>
+        <tr>
+            <td style="padding:4px 0;color:#666666;">Name</td>
+            <td style="padding:4px 0;" th:text="${customerName}">Kundin</td>
+        </tr>
+        <tr>
+            <td style="padding:4px 0;color:#666666;">Bestellreferenz</td>
+            <td style="padding:4px 0;" th:text="${orderReference}">Bestellnummer</td>
+        </tr>
+        <tr>
+            <td style="padding:4px 0;color:#666666;">E-Mail</td>
+            <td style="padding:4px 0;" th:text="${email}">kunde@example.com</td>
+        </tr>
+        <tr th:if="${note != null and !#strings.isEmpty(note)}">
+            <td style="padding:4px 0;color:#666666;vertical-align:top;">Anmerkung</td>
+            <td style="padding:4px 0;" th:text="${note}">Notiz</td>
+        </tr>
+    </table>
+    <p>Bearbeitung im Shop-Admin unter "Widerrufe".</p>
+</div>

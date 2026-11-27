@@ -48,8 +48,8 @@ public record MedusaProduct(
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Variant(String id, String title, CalculatedPrice calculated_price, Integer inventory_quantity,
-                           Boolean allow_backorder) {
+    public record Variant(String id, String title, String sku, CalculatedPrice calculated_price,
+                           Integer inventory_quantity, Boolean allow_backorder) {
 
         /**
          * Null (not zero) means "not stock-managed for this variant" (Medusa only sets this
@@ -176,5 +176,49 @@ public record MedusaProduct(
         }
         OffsetDateTime deadline = preorderDeadline();
         return deadline != null && OffsetDateTime.now().isAfter(deadline);
+    }
+
+    /**
+     * GPSR/product-safety-adjacent info (material composition, manufacturer) - also plain
+     * product metadata, same deliberate choice as isPreorder() above: admins set it per
+     * product's "Metadata" section in the Medusa Admin Dashboard, nothing to configure here.
+     */
+    public String material() {
+        Object raw = metadata == null ? null : metadata.get("material");
+        return raw instanceof String value && !value.isBlank() ? value : null;
+    }
+
+    public String manufacturer() {
+        Object raw = metadata == null ? null : metadata.get("manufacturer");
+        return raw instanceof String value && !value.isBlank() ? value : null;
+    }
+
+    private OffsetDateTime metadataDate(String key) {
+        Object raw = metadata == null ? null : metadata.get(key);
+        if (!(raw instanceof String value) || value.isBlank()) {
+            return null;
+        }
+        try {
+            return OffsetDateTime.parse(value);
+        } catch (DateTimeParseException e) {
+            return null;
+        }
+    }
+
+    /** A concrete pickup window ("pickup_start"/"pickup_end" metadata), shown instead of just the badge. */
+    public String pickupPeriodFormatted() {
+        OffsetDateTime start = metadataDate("pickup_start");
+        OffsetDateTime end = metadataDate("pickup_end");
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.GERMANY);
+        if (start != null && end != null) {
+            return start.format(dateFormat) + " – " + end.format(dateFormat);
+        }
+        if (start != null) {
+            return "ab " + start.format(dateFormat);
+        }
+        if (end != null) {
+            return "bis " + end.format(dateFormat);
+        }
+        return null;
     }
 }

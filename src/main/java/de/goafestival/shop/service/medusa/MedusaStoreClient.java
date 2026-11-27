@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 import java.util.List;
@@ -32,6 +33,14 @@ public class MedusaStoreClient {
 
     /** Resolved once and reused - a festival shop doesn't need per-request region lookups. */
     private volatile MedusaRegion cachedDefaultRegion;
+
+    /**
+     * An empty, no-customer cart kept around purely to ask Medusa's cart-bound
+     * /store/shipping-options route for the shop's full set of shipping options (see
+     * listAllShippingOptions) - the "Versand und Abholung" info page has no real cart to use,
+     * and Medusa's Store API doesn't offer a cart-less equivalent of that route.
+     */
+    private volatile String catalogCartId;
 
     public MedusaStoreClient(MedusaProperties properties) {
         this.properties = properties;
@@ -94,7 +103,7 @@ public class MedusaStoreClient {
         return restClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/store/products/{id}")
                         .queryParam("region_id", region.id())
-                        .queryParam("fields", "+metadata,+variants.inventory_quantity")
+                        .queryParam("fields", "+metadata,+variants.inventory_quantity,+variants.sku")
                         .build(productId))
                 .retrieve()
                 .body(ProductResponse.class)
@@ -182,6 +191,29 @@ public class MedusaStoreClient {
                 .retrieve()
                 .body(ShippingOptionsResponse.class)
                 .shipping_options();
+    }
+
+    /**
+     * Every shipping option the shop offers, for the public "Versand und Abholung" info page -
+     * grouped/labelled by shipping_profile_id, same raw shape listShippingOptions(cartId)
+     * returns for a real cart (see its own javadoc: not filtered by any cart's actual items,
+     * only by the sales channel/fulfillment set reachable from it), just against a cached,
+     * otherwise-unused cart instead of a customer's.
+     */
+    public List<MedusaShippingOption> listAllShippingOptions() {
+        String cartId = catalogCartId;
+        if (cartId != null) {
+            try {
+                return listShippingOptions(cartId);
+            } catch (HttpClientErrorException.NotFound ignored) {
+                // Fall through and mint a fresh one below.
+            }
+        }
+        synchronized (this) {
+            cartId = createCart().id();
+            catalogCartId = cartId;
+        }
+        return listShippingOptions(cartId);
     }
 
     public MedusaCart addShippingMethod(String cartId, String shippingOptionId) {

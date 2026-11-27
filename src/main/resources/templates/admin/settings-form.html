@@ -19,6 +19,27 @@
         </fieldset>
 
         <fieldset>
+            <legend>Verkäuferdaten</legend>
+            <p class="field-hint">
+                Strukturiert (nicht nur im Impressum-Fließtext), damit sie automatisch ins
+                Muster-Widerrufsformular und in die Bestellbestätigungsmail eingesetzt werden können.
+            </p>
+            <label>Firmenname / Betreiber<input type="text" th:field="*{companyName}"/></label>
+            <label>Straße &amp; Hausnummer<input type="text" th:field="*{companyStreet}"/></label>
+            <label>PLZ<input type="text" th:field="*{companyPostalCode}"/></label>
+            <label>Ort<input type="text" th:field="*{companyCity}"/></label>
+            <label>Land<input type="text" th:field="*{companyCountry}"/></label>
+            <label>Rücksende-E-Mail (Widerruf)<input type="email" th:field="*{returnEmail}"/></label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Versand &amp; Checkout-Hinweise</legend>
+            <p class="field-hint">HTML ist erlaubt. Wird auf der "Versand und Abholung"-Seite bzw. am Anfang des Checkouts angezeigt.</p>
+            <label>Liefer-/Abholzeiten (Freitext, "Versand und Abholung"-Seite)<textarea th:field="*{shippingInfoText}" rows="6" class="code-textarea"></textarea></label>
+            <label>Hinweis zu Lieferbeschränkungen &amp; Zahlungsmitteln (Checkout)<textarea th:field="*{deliveryPaymentNotice}" rows="4" class="code-textarea"></textarea></label>
+        </fieldset>
+
+        <fieldset>
             <legend>Impressum</legend>
             <p class="field-hint">HTML ist erlaubt (z.B. &lt;p&gt;, &lt;br/&gt;, &lt;a&gt;).</p>
             <label>Impressumstext (HTML)<textarea th:field="*{impressumText}" rows="10" class="code-textarea"></textarea></label>

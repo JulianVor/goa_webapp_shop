@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head-admin :: head-admin('Widerrufe')}"></head>
+<body class="admin-body">
+<div th:replace="~{fragments/admin-nav :: admin-nav('widerrufe')}"></div>
+
+<main class="admin-main">
+    <h1>Widerrufe</h1>
+    <p class="flash-success" th:if="${success}" th:text="${success}"></p>
+    <p>
+        Eingegangene elektronische Widerrufserklärungen (§356a BGB). Die Stornierung/Rückerstattung
+        selbst passiert manuell im Medusa Admin + Stripe Dashboard - hier wird nur nachgehalten,
+        ob ein Widerruf schon bearbeitet wurde.
+    </p>
+
+    <p th:if="${#lists.isEmpty(withdrawals)}">Bisher sind keine Widerrufe eingegangen.</p>
+
+    <div class="table-scroll" th:unless="${#lists.isEmpty(withdrawals)}">
+        <table class="admin-table">
+            <thead>
+            <tr>
+                <th>Eingegangen</th>
+                <th>Name</th>
+                <th>Bestellreferenz</th>
+                <th>E-Mail</th>
+                <th>Anmerkung</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="w : ${withdrawals}">
+                <td th:text="${#temporals.format(w.receivedAt, 'dd.MM.yyyy HH:mm')}">01.01.2026 12:00</td>
+                <td th:text="${w.customerName}">Name</td>
+                <td th:text="${w.orderReference}">Referenz</td>
+                <td th:text="${w.email}">E-Mail</td>
+                <td th:text="${w.note}"></td>
+                <td th:text="${w.status}">NEU</td>
+                <td>
+                    <form method="post" th:action="@{/admin/widerrufe/{id}/status(id=${w.id})}" class="inline-form">
+                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <input type="hidden" name="status" th:value="${w.status.name() == 'NEU' ? 'BEARBEITET' : 'NEU'}"/>
+                        <button type="submit" class="btn btn-secondary"
+                                th:text="${w.status.name() == 'NEU' ? 'Als bearbeitet markieren' : 'Als neu markieren'}">Status ändern</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

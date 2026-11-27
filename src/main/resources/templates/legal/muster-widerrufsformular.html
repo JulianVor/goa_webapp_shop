@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Muster-Widerrufsformular')}"></head>
+<body>
+<div class="page-bg" aria-hidden="true"></div>
+<div th:replace="~{fragments/nav :: nav}"></div>
+<main class="shop-panel reading-panel">
+    <h1 class="page-title">Muster-Widerrufsformular</h1>
+    <p>
+        Schneller geht's elektronisch über unsere <a th:href="@{/widerruf-erklaeren}">Widerruf-Seite</a> -
+        du erhältst sofort eine Bestätigung. Wer lieber das gesetzliche Formular ausfüllen und
+        selbst zusenden möchte, findet es hier:
+    </p>
+    <div class="legal-content">
+        <p><em>(Wenn Sie den Vertrag widerrufen wollen, dann füllen Sie bitte dieses Formular aus und senden Sie es zurück.)</em></p>
+        <p>
+            An<br/>
+            <span th:text="${shopSettings.companyName}">Firma</span><br/>
+            <span th:text="${shopSettings.companyStreet}">Straße</span><br/>
+            <span th:text="${shopSettings.companyPostalCode} + ' ' + ${shopSettings.companyCity}">PLZ Ort</span><br/>
+            <span th:text="${shopSettings.companyCountry}">Land</span><br/>
+            <span th:if="${shopSettings.returnEmail}" th:text="'E-Mail: ' + ${shopSettings.returnEmail}"></span>
+        </p>
+        <p>
+            Hiermit widerrufe(n) ich/wir (*) den von mir/uns (*) abgeschlossenen Vertrag über den
+            Kauf der folgenden Waren (*)/die Erbringung der folgenden Dienstleistung (*)
+        </p>
+        <p>Bestellt am (*)/erhalten am (*):</p>
+        <p>Name des/der Verbraucher(s):</p>
+        <p>Anschrift des/der Verbraucher(s):</p>
+        <p>Unterschrift des/der Verbraucher(s) (nur bei Mitteilung auf Papier):</p>
+        <p>Datum:</p>
+        <p><small>(*) Unzutreffendes streichen.</small></p>
+    </div>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

@@ -33,6 +33,6 @@ class MedusaProductTest {
 
     private MedusaProduct.Variant size(String title, String amount, int quantity, boolean backorders) {
         var price = new MedusaProduct.CalculatedPrice(new BigDecimal(amount), null, false, "eur");
-        return new MedusaProduct.Variant(title, title, price, quantity, backorders);
+        return new MedusaProduct.Variant(title, title, null, price, quantity, backorders);
     }
 }
