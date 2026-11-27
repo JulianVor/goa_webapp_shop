@@ -570,7 +570,12 @@ h1 { font-size: 1.6rem; margin: 0 0 0.5rem; }
     .admin-sidebar-nav { flex-direction: row; flex-wrap: wrap; }
     .admin-sidebar-footer { margin-top: 0; flex-direction: row; padding-top: 0; border-top: none; }
 
-    .admin-main { padding: 1.5rem 1rem 3rem; }
+    /* "margin: 0 auto" (the base rule, for desktop centering below max-width:1100px) fights
+       flexbox's own cross-axis stretch once the sidebar stacks above .admin-main in a column
+       layout here: auto margins absorb the stretch instead of letting it fill the viewport, so
+       .admin-main shrinks to its content's width (e.g. a wide table) instead of the other way
+       round - the page gains horizontal scroll, dragging the sidebar/header along with it. */
+    .admin-main { padding: 1.5rem 1rem 3rem; margin: 0; }
 
     .admin-table { min-width: 480px; }
 
