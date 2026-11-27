@@ -9,7 +9,7 @@
     <h1>Kasse</h1>
     <p class="flash-error" role="alert" th:if="${error}" th:text="${error}"></p>
 
-    <div class="legal-content field-hint" th:if="${step == 'address' and shopSettings.deliveryPaymentNotice}"
+    <div class="legal-content field-hint" th:if="${step == 'address' and !#strings.isEmpty(shopSettings.deliveryPaymentNotice)}"
          th:utext="${shopSettings.deliveryPaymentNotice}"></div>
 
     <form th:if="${step == 'address'}" th:action="@{/kasse/adresse}" method="post" class="checkout-form"
