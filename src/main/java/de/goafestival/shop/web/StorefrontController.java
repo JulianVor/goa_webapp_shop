@@ -3,6 +3,9 @@ package de.goafestival.shop.web;
 import de.goafestival.shop.service.medusa.MedusaStoreClient;
 import de.goafestival.shop.service.medusa.dto.MedusaCart;
 import de.goafestival.shop.service.medusa.dto.MedusaProduct;
+import de.goafestival.shop.service.medusa.dto.MedusaShippingOption;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.CacheControl;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -35,6 +39,7 @@ import java.util.Objects;
 @Controller
 public class StorefrontController {
 
+    private static final Logger log = LoggerFactory.getLogger(StorefrontController.class);
     private static final String CART_COOKIE = CartCookie.NAME;
 
     private final MedusaStoreClient medusaStoreClient;
@@ -202,5 +207,23 @@ public class StorefrontController {
     @GetMapping("/datenschutz")
     public String datenschutz() {
         return "legal/datenschutz";
+    }
+
+    @GetMapping("/muster-widerrufsformular")
+    public String musterWiderrufsformular() {
+        return "legal/muster-widerrufsformular";
+    }
+
+    @GetMapping("/versand-und-abholung")
+    public String versandUndAbholung(Model model) {
+        List<MedusaShippingOption> options = List.of();
+        try {
+            options = medusaStoreClient.listAllShippingOptions();
+        } catch (RestClientException e) {
+            log.warn("Versandoptionen für /versand-und-abholung konnten nicht geladen werden ({})", e.getMessage());
+        }
+        model.addAttribute("shippingOptions", options);
+        model.addAttribute("currencyCode", medusaStoreClient.defaultRegion().currency_code());
+        return "legal/versand-und-abholung";
     }
 }

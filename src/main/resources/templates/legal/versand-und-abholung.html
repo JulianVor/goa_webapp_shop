@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Versand und Abholung')}"></head>
+<body>
+<div class="page-bg" aria-hidden="true"></div>
+<div th:replace="~{fragments/nav :: nav}"></div>
+<main class="shop-panel reading-panel">
+    <h1 class="page-title">Versand und Abholung</h1>
+
+    <div class="legal-content" th:if="${shopSettings.shippingInfoText}" th:utext="${shopSettings.shippingInfoText}"></div>
+
+    <h2>Verfügbare Versand- und Abholarten</h2>
+    <ul th:unless="${#lists.isEmpty(shippingOptions)}">
+        <li th:each="option : ${shippingOptions}">
+            <span th:text="${option.name()}">Versandart</span>
+            <span th:if="${option.price() != null}">
+                – <th:block th:replace="~{fragments/price :: amount(${option.price()}, ${currencyCode})}"/>
+            </span>
+        </li>
+    </ul>
+    <p th:if="${#lists.isEmpty(shippingOptions)}">
+        Die Versandoptionen können aktuell nicht geladen werden - die konkreten Optionen werden
+        beim Checkout angezeigt.
+    </p>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
