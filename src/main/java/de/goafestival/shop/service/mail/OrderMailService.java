@@ -5,11 +5,13 @@ import de.goafestival.shop.service.ShopSettingsService;
 import de.goafestival.shop.service.branding.Branding;
 import de.goafestival.shop.service.branding.GoaWebappBrandingClient;
 import de.goafestival.shop.service.medusa.dto.MedusaCompleteCartResult;
+import de.goafestival.shop.service.pdf.LegalDocumentPdfService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -47,26 +49,26 @@ public class OrderMailService {
     private final ITemplateEngine templateEngine;
     private final GoaWebappBrandingClient brandingClient;
     private final ShopSettingsService shopSettingsService;
+    private final LegalDocumentPdfService legalDocumentPdfService;
     private final String fromAddress;
     private final String mailHost;
-    private final String shopBaseUrl;
     private final boolean enabled;
 
     public OrderMailService(JavaMailSender mailSender, ITemplateEngine templateEngine,
                              GoaWebappBrandingClient brandingClient, ShopSettingsService shopSettingsService,
+                             LegalDocumentPdfService legalDocumentPdfService,
                              @Value("${app.mail.from:}") String configuredFrom,
                              @Value("${spring.mail.username:}") String mailUsername,
-                             @Value("${spring.mail.host:}") String mailHost,
-                             @Value("${app.shop.base-url:}") String shopBaseUrl) {
+                             @Value("${spring.mail.host:}") String mailHost) {
         this.mailSender = mailSender;
         this.templateEngine = templateEngine;
         this.brandingClient = brandingClient;
         this.shopSettingsService = shopSettingsService;
+        this.legalDocumentPdfService = legalDocumentPdfService;
         this.fromAddress = !configuredFrom.isBlank() ? configuredFrom
                 : !mailUsername.isBlank() ? mailUsername
                 : "bestellung@goa-festival.de";
         this.mailHost = mailHost;
-        this.shopBaseUrl = shopBaseUrl;
         this.enabled = !mailHost.isBlank();
     }
 
@@ -130,11 +132,12 @@ public class OrderMailService {
             String html = renderEmailHtml(content, branding);
 
             MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setTo(fromAddress);
             helper.setFrom(fromAddress);
             helper.setSubject(subject);
             helper.setText(html, true);
+            attachLegalPdfs(helper);
             mailSender.send(message);
             return fromAddress;
         } catch (MessagingException | MailException e) {
@@ -186,25 +189,25 @@ public class OrderMailService {
             String html = renderEmailHtml(content, branding);
 
             MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setTo(order.email());
             helper.setFrom(fromAddress);
             helper.setSubject(subject);
             helper.setText(html, true);
+            attachLegalPdfs(helper);
             mailSender.send(message);
-        } catch (MessagingException | MailException e) {
+        } catch (MessagingException | RuntimeException e) {
             log.warn("Bestellbestätigung an {} konnte nicht gesendet werden (Bestellung {})",
                     order.email(), order.display_id(), e);
         }
     }
 
     /**
-     * Fixed, non-admin-editable block appended after the admin's own body text: seller info,
-     * full AGB/Widerrufsbelehrung text (not just a link - both are only linked to from the
-     * admin-edited body otherwise), the Muster-Widerrufsformular, and the legal-text version
-     * each refers to (see ShopSettingsService's version bump on save) so it's traceable which
-     * fassung applied at order time. Deliberately built here rather than left for the admin to
-     * paste in - it must survive even if the admin never updates the body text again.
+     * Fixed, non-admin-editable block appended after the admin's own body text: seller info and
+     * explicit payment status. The full AGB/Widerrufsbelehrung text and the Muster-
+     * Widerrufsformular are attached as PDFs instead (see attachLegalPdfs) - built here rather
+     * than left for the admin to paste in, so it survives even if the admin never touches the
+     * body text again.
      */
     private String legalFooterHtml() {
         ShopSettings settings = shopSettingsService.get();
@@ -216,14 +219,16 @@ public class OrderMailService {
         context.setVariable("companyCity", settings.getCompanyCity());
         context.setVariable("companyCountry", settings.getCompanyCountry());
         context.setVariable("contactEmail", settings.getContactEmail());
-        context.setVariable("agbText", settings.getAgbText());
-        context.setVariable("agbVersion", settings.getAgbVersion());
-        context.setVariable("agbVersionDate", settings.getAgbVersionDate());
-        context.setVariable("widerrufText", settings.getWiderrufText());
-        context.setVariable("widerrufVersion", settings.getWiderrufVersion());
-        context.setVariable("widerrufVersionDate", settings.getWiderrufVersionDate());
-        context.setVariable("widerrufErklaerenUrl", shopBaseUrl.isBlank() ? null : shopBaseUrl + "/widerruf-erklaeren");
         return templateEngine.process("email/order-legal-footer", context);
+    }
+
+    /** AGB/Widerrufsbelehrung/Muster-Widerrufsformular, generated fresh from the current admin-edited text. */
+    private void attachLegalPdfs(MimeMessageHelper helper) throws MessagingException {
+        helper.addAttachment("AGB.pdf", new ByteArrayResource(legalDocumentPdfService.agbPdf()), "application/pdf");
+        helper.addAttachment("Widerrufsbelehrung.pdf",
+                new ByteArrayResource(legalDocumentPdfService.widerrufPdf()), "application/pdf");
+        helper.addAttachment("Muster-Widerrufsformular.pdf",
+                new ByteArrayResource(legalDocumentPdfService.musterWiderrufsformularPdf()), "application/pdf");
     }
 
     /** Renders just the items/price table - empty if the order has no items to show. */

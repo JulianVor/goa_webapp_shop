@@ -16,6 +16,11 @@ RUN mvn -B -q clean package -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
+# PDF generation (AGB/Widerrufsbelehrung/Muster-Widerrufsformular, see LegalDocumentPdfService)
+# needs at least one real font installed - Alpine ships none by default, and without one,
+# PDFBox's font substitution for bullet-list glyphs has nothing to fall back to.
+RUN apk add --no-cache fontconfig ttf-dejavu
+
 RUN addgroup -S shop && adduser -S shop -G shop
 COPY --from=build /build/target/goa-webapp-shop-*.jar app.jar
 USER shop

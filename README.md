@@ -230,10 +230,15 @@ Festivalshop" für den vollständigen Hintergrund):
   im Medusa Admin + Stripe Dashboard, nicht automatisiert (Medusa bleibt vanilla, siehe
   Architektur oben).
 - **Bestellbestätigungsmail**: hängt unterhalb des admin-editierbaren Textes automatisch
-  einen festen Block an (Verkäuferangaben, Zahlungsstatus, vollständiger AGB- und
-  Widerrufsbelehrungstext inkl. Versionsstand, Muster-Widerrufsformular) - siehe
-  `OrderMailService.legalFooterHtml()`. Für einen absoluten Link zur elektronischen
-  Widerrufserklärung in der Mail `SHOP_BASE_URL` setzen (sonst wird der Link weggelassen).
+  einen festen Block an (Verkäuferangaben, Zahlungsstatus - siehe
+  `OrderMailService.legalFooterHtml()`). AGB, Widerrufsbelehrung und Muster-Widerrufsformular
+  kommen zusätzlich als eigene PDF-Dateien im Anhang, live aus dem admin-gepflegten Text
+  und den Versionsständen erzeugt (`LegalDocumentPdfService`, per openhtmltopdf+jsoup -
+  das rich-text-editor-HTML ist nicht zwingend wohlgeformtes XML, jsoup räumt es vorher auf).
+  Für einen absoluten Link zur elektronischen Widerrufserklärung in der Widerrufsbelehrung-PDF
+  `SHOP_BASE_URL` setzen (sonst wird der Link weggelassen). Die Docker-Runtime braucht dafür
+  mindestens eine echte Schriftart (`fontconfig`/`ttf-dejavu` im Dockerfile) - Alpine liefert
+  von Haus aus keine mit, und PDFBox braucht eine zur Glyphen-Substitution.
 - **Muster-Widerrufsformular**: eigene Seite `/muster-widerrufsformular` mit dem
   gesetzlichen Text und den strukturierten Verkäuferdaten eingesetzt.
 - **"Versand und Abholung"**: eigene Seite `/versand-und-abholung` mit live aus Medusa
