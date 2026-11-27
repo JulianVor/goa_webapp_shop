@@ -272,21 +272,22 @@ Festivalshop" für den vollständigen Hintergrund):
   Admin-Oberfläche, um die geloggte Preishistorie selbst einzusehen (nur in der Datenbank,
   Tabelle `price_observation`).
 
-## CSV-Exporte
+## Vorbestellungen / Bestellungen-Export
 
-Zwei unterschiedliche Exporte, für zwei unterschiedliche Zwecke:
+Zwei unterschiedliche Bedürfnisse, zwei unterschiedliche Lösungen:
 
 - **Bestellungen für die Buchhaltung**: braucht keinen eigenen Code - Medusa selbst kann das
   schon. Im Medusa Admin Dashboard unter **Orders** gibt es eine eingebaute Export-Funktion
   (Filter nach Zeitraum/Status, dann Download als CSV). Da es rein um Medusas eigene
   Bestelldaten geht, gibt es keinen Grund, das hier zu duplizieren ("Medusa bleibt vanilla").
-- **Abholliste fürs Festival** (`Admin → Abholliste (CSV)`, `/admin/export/abholung.csv`):
+- **Vorbestellungen fürs Festival** (**Admin → Vorbestellungen**, `/admin/vorbestellungen`):
   das kann Medusas Export nicht leisten, weil es shop-eigene Logik braucht (welche Artikel
   `pickup_only` sind, siehe `MedusaProduct.isPickupOnly()`) - deshalb eigener Code
-  (`MedusaAdminClient`/`AdminExportController`). Eine Zeile pro noch nicht abgeholter
-  Pickup-Position (Bestellnummer, Name, Produkt, Größe) - sobald eine Position im Medusa
-  Admin als erfüllt markiert wird (nach Übergabe auf dem Festival), verschwindet sie beim
-  nächsten Export von selbst.
+  (`MedusaAdminClient`/`AdminExportController`). Die Seite zeigt eine Zeile pro noch nicht
+  abgeholter Pickup-Position (Bestellnummer, Name, Produkt, Größe), mit einem Button darüber
+  für denselben Inhalt als CSV-Download (`/admin/export/abholung.csv`). Eine Zeile
+  verschwindet von selbst, sobald die Position im Medusa Admin als erfüllt markiert wird
+  (nach Übergabe auf dem Festival) oder die ganze Bestellung storniert wird.
 
   Braucht einen Medusa **Secret API Key** (Admin Dashboard: Settings → API Key Management →
   Secret API Keys - nicht den Publishable Key, der ist store-seitig und reicht dafür nicht)

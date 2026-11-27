@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head-admin :: head-admin('Vorbestellungen')}"></head>
+<body class="admin-body">
+<div th:replace="~{fragments/admin-nav :: admin-nav('vorbestellungen')}"></div>
+
+<main class="admin-main">
+    <h1>Vorbestellungen</h1>
+
+    <p class="flash-error" th:unless="${enabled}">
+        Kein Medusa Admin API Key konfiguriert - <code>MEDUSA_ADMIN_API_KEY</code> ist leer.
+    </p>
+
+    <div th:if="${enabled}">
+        <p>
+            Noch nicht abgeholte Vorbestellungen (Artikel, die nur am Festival ausgegeben werden) -
+            eine Zeile verschwindet von selbst, sobald sie im Medusa Admin als erfüllt markiert wird.
+        </p>
+        <a class="btn btn-secondary" th:href="@{/admin/export/abholung.csv}">Als CSV exportieren</a>
+
+        <p th:if="${#lists.isEmpty(rows)}" style="margin-top: 1rem;">Aktuell keine offenen Vorbestellungen.</p>
+
+        <div class="table-scroll" th:unless="${#lists.isEmpty(rows)}" style="margin-top: 1rem;">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>Bestellnummer</th>
+                    <th>Name</th>
+                    <th>Produkt</th>
+                    <th>Größe</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="row : ${rows}">
+                    <td th:text="${row.bestellnummer()}">1</td>
+                    <td th:text="${row.name()}">Name</td>
+                    <td th:text="${row.produkt()}">Produkt</td>
+                    <td th:text="${row.groesse()}">Größe</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</body>
+</html>

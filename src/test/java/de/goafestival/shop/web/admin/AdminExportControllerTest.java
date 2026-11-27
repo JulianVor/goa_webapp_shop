@@ -4,6 +4,8 @@ import de.goafestival.shop.service.medusa.MedusaAdminClient;
 import de.goafestival.shop.service.medusa.dto.MedusaAdminOrder;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.ui.ExtendedModelMap;
+import org.springframework.ui.Model;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -77,6 +79,36 @@ class AdminExportControllerTest {
         controller.abholungCsv(response);
 
         assertEquals(503, response.getStatus());
+    }
+
+    @Test
+    void vorbestellungenPageShowsTheSameRowsAsTheCsv() {
+        when(medusaAdminClient.isEnabled()).thenReturn(true);
+        when(medusaAdminClient.listAllOrders()).thenReturn(List.of(
+                order(6L, "Mia", "Beispiel", "mia@example.com", List.of(
+                        item("Goa 2026 T-Shirt", "M", 1, 0, true),
+                        item("Goa 2026 T-Shirt", "L", 1, 1, true)))));
+        Model model = new ExtendedModelMap();
+
+        String view = controller.vorbestellungen(model);
+
+        assertEquals("admin/vorbestellungen", view);
+        assertEquals(Boolean.TRUE, model.getAttribute("enabled"));
+        @SuppressWarnings("unchecked")
+        List<AdminExportController.PickupRow> rows = (List<AdminExportController.PickupRow>) model.getAttribute("rows");
+        assertEquals(1, rows.size());
+        assertEquals("M", rows.get(0).groesse());
+    }
+
+    @Test
+    void vorbestellungenPageShowsNoRowsWhenNotConfigured() {
+        when(medusaAdminClient.isEnabled()).thenReturn(false);
+        Model model = new ExtendedModelMap();
+
+        controller.vorbestellungen(model);
+
+        assertEquals(Boolean.FALSE, model.getAttribute("enabled"));
+        assertTrue(((List<?>) model.getAttribute("rows")).isEmpty());
     }
 
     private static MedusaAdminOrder order(long displayId, String firstName, String lastName, String email,
