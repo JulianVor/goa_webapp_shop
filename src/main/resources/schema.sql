@@ -37,3 +37,4 @@ CREATE TABLE IF NOT EXISTS price_observation (
     currency_code varchar(255),
     observed_at timestamp
 );
+

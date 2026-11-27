@@ -284,10 +284,18 @@ Zwei unterschiedliche Bedürfnisse, zwei unterschiedliche Lösungen:
   das kann Medusas Export nicht leisten, weil es shop-eigene Logik braucht (welche Artikel
   `pickup_only` sind, siehe `MedusaProduct.isPickupOnly()`) - deshalb eigener Code
   (`MedusaAdminClient`/`AdminExportController`). Die Seite zeigt eine Zeile pro noch nicht
-  abgeholter Pickup-Position (Bestellnummer, Name, Produkt, Größe), mit einem Button darüber
-  für denselben Inhalt als CSV-Download (`/admin/export/abholung.csv`). Eine Zeile
-  verschwindet von selbst, sobald die Position im Medusa Admin als erfüllt markiert wird
-  (nach Übergabe auf dem Festival) oder die ganze Bestellung storniert wird.
+  abgeholter Bestellung (Bestellnummer, Name, Produkt, Größen als "2x M, 3x XL" - eine
+  Bestellung mit mehreren Größen bekommt also nur eine Zeile, keine pro Größe), mit einem
+  Button darüber für denselben Inhalt als CSV-Download (`/admin/export/abholung.csv`). Über
+  den Button "Als fertig markieren" (mit Ja/Nein-Bestätigung) in jeder Zeile lässt sich eine
+  Bestellung direkt hier abhaken - das ruft Medusas eigene Fulfillment-API auf
+  (`POST /admin/orders/{id}/fulfillments`, `MedusaAdminClient.fulfillItems()`) und markiert
+  die offenen Pickup-Positionen dort als erfüllt, genau wie ein Admin es sonst händisch im
+  Medusa Admin Dashboard tun würde. Bewusst **kein** eigener "erledigt"-Status in
+  goa_webapp_shop: Medusas Fulfillment-Status bleibt die einzige Quelle der Wahrheit, damit
+  diese Seite und der Medusa Admin nie auseinanderlaufen können. Eine Zeile verschwindet
+  entsprechend von selbst, sobald alle Pickup-Positionen der Bestellung - hier oder direkt im
+  Medusa Admin - als erfüllt markiert werden, oder die ganze Bestellung storniert wird.
 
   Braucht einen Medusa **Secret API Key** (Admin Dashboard: Settings → API Key Management →
   Secret API Keys - nicht den Publishable Key, der ist store-seitig und reicht dafür nicht)

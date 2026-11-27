@@ -10,11 +10,14 @@
     <p class="flash-error" th:unless="${enabled}">
         Kein Medusa Admin API Key konfiguriert - <code>MEDUSA_ADMIN_API_KEY</code> ist leer.
     </p>
+    <p class="flash-success" th:if="${success}" th:text="${success}"></p>
+    <p class="flash-error" th:if="${error}" th:text="${error}"></p>
 
     <div th:if="${enabled}">
         <p>
             Noch nicht abgeholte Vorbestellungen (Artikel, die nur am Festival ausgegeben werden) -
-            eine Zeile verschwindet von selbst, sobald sie im Medusa Admin als erfüllt markiert wird.
+            eine Zeile verschwindet von selbst, sobald die Bestellung hier als fertig markiert wird
+            (das markiert die Artikel direkt in Medusa als erfüllt) oder im Medusa Admin.
         </p>
         <a class="btn btn-secondary" th:href="@{/admin/export/abholung.csv}">Als CSV exportieren</a>
 
@@ -27,7 +30,8 @@
                     <th>Bestellnummer</th>
                     <th>Name</th>
                     <th>Produkt</th>
-                    <th>Größe</th>
+                    <th>Größen</th>
+                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -35,7 +39,15 @@
                     <td th:text="${row.bestellnummer()}">1</td>
                     <td th:text="${row.name()}">Name</td>
                     <td th:text="${row.produkt()}">Produkt</td>
-                    <td th:text="${row.groesse()}">Größe</td>
+                    <td th:text="${row.groesse()}">2x M, 3x XL</td>
+                    <td>
+                        <form method="post" th:action="@{/admin/vorbestellungen/{id}/fertig(id=${row.orderId()})}"
+                              class="inline-form"
+                              th:onsubmit="|return confirm('Bestellung Nr. ${row.bestellnummer()} als fertig (abgeholt) markieren?')|">
+                            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-secondary">Als fertig markieren</button>
+                        </form>
+                    </td>
                 </tr>
                 </tbody>
             </table>

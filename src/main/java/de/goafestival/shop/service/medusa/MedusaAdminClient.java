@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Thin wrapper around Medusa's Admin API, used only for the Abholliste CSV export
+ * Thin wrapper around Medusa's Admin API, used only for the Vorbestellungen page
  * (AdminExportController) - everything else in this app talks to the public Store API
  * (MedusaStoreClient). Needs a Secret API Key (Admin Dashboard: Settings > API Key
  * Management > Secret API Keys), not the Store API's publishable key.
@@ -55,8 +55,8 @@ public class MedusaAdminClient {
                             .queryParam("limit", limit)
                             .queryParam("offset", currentOffset)
                             .queryParam("order", "id")
-                            .queryParam("fields", "display_id,email,status,shipping_address.first_name,"
-                                    + "shipping_address.last_name,items.product_title,items.variant_title,"
+                            .queryParam("fields", "id,display_id,email,status,shipping_address.first_name,"
+                                    + "shipping_address.last_name,items.id,items.product_title,items.variant_title,"
                                     + "items.quantity,items.detail.fulfilled_quantity,items.product.metadata")
                             .build())
                     .retrieve()
@@ -72,6 +72,29 @@ public class MedusaAdminClient {
             offset += limit;
         }
         return all;
+    }
+
+    /**
+     * Creates a Medusa fulfillment for exactly these order lines/quantities - this is the same
+     * action an admin would otherwise do by hand in the Medusa Admin Dashboard (Orders > order >
+     * "Fulfill items"), just triggered from the Vorbestellungen page instead. Deliberately not
+     * wrapped in any local "done" flag of our own: Medusa's own fulfilled_quantity is the only
+     * source of truth for what's been handed over, so the two can never drift apart (see
+     * AdminExportController.outstandingPickupRows()). location_id is left unset - Medusa falls
+     * back to the stock location linked to the order's own shipping option.
+     */
+    public void fulfillItems(String orderId, List<FulfillmentItem> items) {
+        restClient.post()
+                .uri("/admin/orders/{id}/fulfillments", orderId)
+                .body(new FulfillmentRequest(items))
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    public record FulfillmentItem(String id, int quantity) {
+    }
+
+    private record FulfillmentRequest(List<FulfillmentItem> items) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

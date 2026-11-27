@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The subset of an Admin API order (GET /admin/orders) needed for the Abholliste CSV export
- * (see MedusaAdminClient/AdminExportController) - deliberately minimal, not a general-purpose
- * order mirror.
+ * The subset of an Admin API order (GET /admin/orders) needed for the Vorbestellungen page/CSV
+ * export (see MedusaAdminClient/AdminExportController) - deliberately minimal, not a
+ * general-purpose order mirror.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record MedusaAdminOrder(Long display_id, String email, String status, Address shipping_address, List<Item> items) {
+public record MedusaAdminOrder(String id, Long display_id, String email, String status, Address shipping_address, List<Item> items) {
 
     /** Medusa's OrderStatus: "pending"|"completed"|"draft"|"archived"|"canceled"|"requires_action". */
     public boolean isCanceled() {
@@ -23,7 +23,7 @@ public record MedusaAdminOrder(Long display_id, String email, String status, Add
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Item(String product_title, String variant_title, Integer quantity, Detail detail, Product product) {
+    public record Item(String id, String product_title, String variant_title, Integer quantity, Detail detail, Product product) {
 
         @JsonIgnoreProperties(ignoreUnknown = true)
         public record Detail(Integer fulfilled_quantity) {
@@ -39,9 +39,14 @@ public record MedusaAdminOrder(Long display_id, String email, String status, Add
 
         /** Not yet (fully) handed over at the festival - the Abholliste's only reason to list it. */
         public boolean isOutstanding() {
+            return outstandingQuantity() > 0;
+        }
+
+        /** How many units of this line are still owed at the festival (0 once fully handed over). */
+        public int outstandingQuantity() {
             int fulfilled = detail != null && detail.fulfilled_quantity() != null ? detail.fulfilled_quantity() : 0;
             int total = quantity != null ? quantity : 0;
-            return fulfilled < total;
+            return Math.max(0, total - fulfilled);
         }
 
         public boolean isPickupOnly() {
