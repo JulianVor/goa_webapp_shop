@@ -9,6 +9,9 @@
     <h1>Kasse</h1>
     <p class="flash-error" role="alert" th:if="${error}" th:text="${error}"></p>
 
+    <div class="legal-content field-hint" th:if="${step == 'address' and shopSettings.deliveryPaymentNotice}"
+         th:utext="${shopSettings.deliveryPaymentNotice}"></div>
+
     <form th:if="${step == 'address'}" th:action="@{/kasse/adresse}" method="post" class="checkout-form"
           th:with="addr=${cart.shipping_address()}">
         <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
@@ -121,8 +124,13 @@
 
         <form th:if="${clientSecret != null}" id="payment-form">
             <div id="payment-element"></div>
+            <label class="checkbox-row agb-acceptance">
+                <input type="checkbox" id="agb-accept" required="required"/>
+                Ich akzeptiere die <a th:href="@{/agb}" target="_blank">AGB</a> und habe die
+                <a th:href="@{/widerruf}" target="_blank">Widerrufsbelehrung</a> zur Kenntnis genommen.
+            </label>
             <div id="payment-message" class="flash-error" style="display:none;" role="alert"></div>
-            <button type="submit" class="btn" id="submit-payment">Jetzt bezahlen</button>
+            <button type="submit" class="btn" id="submit-payment">Zahlungspflichtig bestellen</button>
         </form>
 
         <script src="https://js.stripe.com/v3/"></script>
