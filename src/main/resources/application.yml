@@ -13,6 +13,14 @@ spring:
     properties:
       hibernate:
         format_sql: false
+  sql:
+    init:
+      # Runs schema.sql against the datasource on every startup, before Hibernate's own
+      # ddl-auto=update gets to it - a defensive, idempotent (IF NOT EXISTS) safety net for
+      # columns/tables that ddl-auto=update has, in practice, failed to add on at least one
+      # production deploy (e.g. a stale running container that never actually restarted on
+      # the new image). ddl-auto=update stays on for everything schema.sql doesn't cover.
+      mode: always
   thymeleaf:
     cache: ${THYMELEAF_CACHE:true}
   mail:
