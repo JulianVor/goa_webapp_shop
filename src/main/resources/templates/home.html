@@ -10,7 +10,7 @@
     <div th:unless="${#lists.isEmpty(products)}" class="product-grid"
          th:classappend="${#lists.size(products) <= 2 or #lists.size(products) == 4} ? 'grid-pair'">
         <a class="product-card shop-panel" th:each="product : ${products}" th:href="@{'/produkte/' + ${product.id()}}"
-           th:with="price=${product.lowestPrice()}, image=${product.imageForCard()}">
+           th:with="price=${priceDisplays.get(product.id())}, image=${product.imageForCard()}">
             <div class="card-media">
                 <img th:if="${image}" th:src="${image}" alt=""/>
                 <span class="image-missing" th:unless="${image}">Produktbild folgt</span>

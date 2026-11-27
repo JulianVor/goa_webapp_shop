@@ -244,8 +244,25 @@ Festivalshop" für den vollständigen Hintergrund):
   bei `pickup_only`-Produkten einen konkreten Abholzeitraum statt nur des Badges, wenn
   `metadata.pickup_start`/`pickup_end` gesetzt sind (gleiches Metadata-Prinzip wie
   `preorder`/`preorder_deadline`/`pickup_only` oben).
-- **Bewusst nicht umgesetzt** (siehe Analyse-Dokument für die Begründung): kein
-  Preishistorie-Feature für öffentliche Rabattaktionen (aktuell nicht geplant, siehe
-  offene Fragen dort), keine automatisierte PDF-Rechnungserstellung, kein eigener
-  Medusa-Endpunkt für den Widerruf, kein Cookie-Banner (kein nicht-essenzielles Tracking
-  im Shop gefunden).
+- **Bewusst nicht umgesetzt** (siehe Analyse-Dokument für die Begründung): keine
+  automatisierte PDF-Rechnungserstellung, kein eigener Medusa-Endpunkt für den Widerruf,
+  kein Cookie-Banner (kein nicht-essenzielles Tracking im Shop gefunden).
+- **Preishistorie für "X % reduziert"-Badges** (§11 PAngV): Der Shop führt eine eigene,
+  von Medusas Price Lists unabhängige Preishistorie (`PriceObservation`/
+  `PriceHistoryService`) - Medusas eigenes "original_amount" ist nur, was ein Admin
+  eingetragen hat, kein Beleg dafür, dass dieser Preis je tatsächlich verlangt wurde, und
+  taugt daher allein nicht als rechtssicherer Vergleichspreis. Einmal täglich (und sofort
+  beim Start) wird für jede Variante der aktuelle Preis geloggt, aber nur wenn er sich seit
+  dem letzten Log-Eintrag geändert hat. Die "−X %"-Badge auf Produktkarte/Produktseite
+  erscheint nur noch, wenn der aktuelle Preis **nachweislich unter dem niedrigsten in den
+  letzten 30 Tagen tatsächlich im Shop verlangten Preis** liegt (`PriceDisplay`,
+  `PriceHistoryService.lowestPriceLast30Days`) - nicht mehr automatisch, sobald in Medusa
+  eine Price List mit höherem "original_amount" hinterlegt ist.
+  **Konkrete Folge:** Für ein Produkt, das im Shop selbst nie zu einem höheren Preis
+  gelistet war (z.B. nur vor Ort beim Festival teurer verkauft, nie online), verschwindet
+  die Badge direkt nach diesem Deploy - es gibt noch keine echte, im Shop nachverfolgte
+  Preissenkung, auf die sie sich stützen könnte. Sobald ein Preis im Shop echt einmal
+  angehoben und wieder gesenkt wird, erscheint die Badge automatisch und korrekt wieder,
+  ganz ohne Admin-Eingriff - einfach den Preis in Medusa ändern. Es gibt aktuell keine
+  Admin-Oberfläche, um die geloggte Preishistorie selbst einzusehen (nur in der Datenbank,
+  Tabelle `price_observation`).

@@ -23,9 +23,9 @@
         <div class="purchase">
             <h1 th:text="${product.title()}">Produktname</h1>
             <div class="detail-price" aria-live="polite" aria-atomic="true">
-                <div id="initial-price"><span th:replace="~{fragments/price :: price(${product.lowestPrice()}, ${product.hasPriceRange()})}"></span></div>
+                <div id="initial-price"><span th:replace="~{fragments/price :: price(${initialPrice}, ${product.hasPriceRange()})}"></span></div>
                 <div th:each="variant : ${variants}" th:attr="data-price-for=${variant.id()}" hidden>
-                    <span th:replace="~{fragments/price :: price(${variant.calculated_price()}, false)}"></span>
+                    <span th:replace="~{fragments/price :: price(${variantPrices.get(variant.id())}, false)}"></span>
                 </div>
             </div>
             <div class="order-note" th:if="${product.isPreorder() or product.isPickupOnly()}">
@@ -65,7 +65,7 @@
                                 <small th:if="${variant.isSoldOut()}">Ausverkauft</small>
                                 <small th:if="${!variant.isSoldOut() and variant.isLowStock()}" th:text="|Nur noch ${variant.inventory_quantity()}|"></small>
                             </span>
-                            <noscript th:if="${product.hasPriceRange()}"><span th:replace="~{fragments/price :: price(${variant.calculated_price()}, false)}"></span></noscript>
+                            <noscript th:if="${product.hasPriceRange()}"><span th:replace="~{fragments/price :: price(${variantPrices.get(variant.id())}, false)}"></span></noscript>
                         </label>
                     </div>
                 </fieldset>

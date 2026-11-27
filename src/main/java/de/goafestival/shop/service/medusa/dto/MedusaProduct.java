@@ -79,39 +79,28 @@ public record MedusaProduct(
             BigDecimal original_amount,
             Boolean is_calculated_price_price_list,
             String currency_code) {
-
-        /**
-         * A Price List (e.g. a "sale" type list overriding the default price) is active AND
-         * actually cheaper than the regular price - Medusa still sets
-         * is_calculated_price_price_list for an override-type list even when it isn't a
-         * discount, so that flag alone isn't enough to label something "Sale".
-         */
-        public boolean isOnSale() {
-            return calculated_amount != null && Boolean.TRUE.equals(is_calculated_price_price_list)
-                    && original_amount != null
-                    && original_amount.compareTo(calculated_amount) > 0;
-        }
-
-        /** Rounded percentage off, e.g. 25 for 20.00 -> 15.00. Only meaningful if isOnSale(). */
-        public int discountPercent() {
-            BigDecimal saved = original_amount.subtract(calculated_amount);
-            return saved.multiply(BigDecimal.valueOf(100))
-                    .divide(original_amount, 0, java.math.RoundingMode.HALF_UP)
-                    .intValue();
-        }
     }
 
     /** Use orderable variants for the advertised price while any are available. */
     public CalculatedPrice lowestPrice() {
+        Variant variant = lowestPricedVariant();
+        return variant != null ? variant.calculated_price() : null;
+    }
+
+    /**
+     * The variant lowestPrice() advertises - exposed separately (not just its price) because
+     * computing a legally safe "is this really on sale, and since when" (see PriceHistoryService)
+     * needs the variant's id, not just its current price.
+     */
+    public Variant lowestPricedVariant() {
         if (variants == null) {
             return null;
         }
         boolean soldOut = isSoldOut();
         return variants.stream()
                 .filter(variant -> soldOut || !variant.isSoldOut())
-                .map(Variant::calculated_price)
-                .filter(p -> p != null && p.calculated_amount() != null)
-                .min((a, b) -> a.calculated_amount().compareTo(b.calculated_amount()))
+                .filter(variant -> variant.calculated_price() != null && variant.calculated_price().calculated_amount() != null)
+                .min((a, b) -> a.calculated_price().calculated_amount().compareTo(b.calculated_price().calculated_amount()))
                 .orElse(null);
     }
 

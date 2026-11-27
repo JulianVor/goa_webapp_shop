@@ -4,6 +4,8 @@ import de.goafestival.shop.service.medusa.MedusaStoreClient;
 import de.goafestival.shop.service.medusa.dto.MedusaCart;
 import de.goafestival.shop.service.medusa.dto.MedusaProduct;
 import de.goafestival.shop.service.medusa.dto.MedusaShippingOption;
+import de.goafestival.shop.service.pricing.PriceDisplay;
+import de.goafestival.shop.service.pricing.PriceHistoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,9 +45,11 @@ public class StorefrontController {
     private static final String CART_COOKIE = CartCookie.NAME;
 
     private final MedusaStoreClient medusaStoreClient;
+    private final PriceHistoryService priceHistoryService;
 
-    public StorefrontController(MedusaStoreClient medusaStoreClient) {
+    public StorefrontController(MedusaStoreClient medusaStoreClient, PriceHistoryService priceHistoryService) {
         this.medusaStoreClient = medusaStoreClient;
+        this.priceHistoryService = priceHistoryService;
     }
 
     @ModelAttribute("hasCartCookie")
@@ -73,7 +77,20 @@ public class StorefrontController {
                 .sorted(Comparator.comparing(MedusaProduct::isPreorder).reversed())
                 .toList();
         model.addAttribute("products", products);
+        model.addAttribute("priceDisplays", priceDisplaysByProductId(products));
         return "home";
+    }
+
+    /** The card price (cheapest orderable variant) per product, keyed by product id - see PriceHistoryService. */
+    private Map<String, PriceDisplay> priceDisplaysByProductId(List<MedusaProduct> products) {
+        Map<String, PriceDisplay> displays = new HashMap<>();
+        for (MedusaProduct product : products) {
+            MedusaProduct.Variant variant = product.lowestPricedVariant();
+            if (variant != null) {
+                displays.put(product.id(), priceHistoryService.resolve(variant));
+            }
+        }
+        return displays;
     }
 
     /**
@@ -88,6 +105,18 @@ public class StorefrontController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vorbestellfrist abgelaufen");
         }
         model.addAttribute("product", product);
+
+        Map<String, PriceDisplay> variantPrices = new HashMap<>();
+        if (product.variants() != null) {
+            for (MedusaProduct.Variant variant : product.variants()) {
+                if (variant.calculated_price() != null && variant.calculated_price().calculated_amount() != null) {
+                    variantPrices.put(variant.id(), priceHistoryService.resolve(variant));
+                }
+            }
+        }
+        model.addAttribute("variantPrices", variantPrices);
+        MedusaProduct.Variant lowestVariant = product.lowestPricedVariant();
+        model.addAttribute("initialPrice", lowestVariant != null ? variantPrices.get(lowestVariant.id()) : null);
         return "product-detail";
     }
 
