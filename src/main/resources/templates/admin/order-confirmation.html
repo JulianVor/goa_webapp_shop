@@ -28,6 +28,12 @@
                 die jeweilige Bestellnummer ein, mit <code>{{bestellungen}}</code> (nur Inhalt) eine Tabelle
                 mit den bestellten Artikeln, Mengen, Preisen und der Gesamtsumme.
             </p>
+            <p class="field-hint">
+                Unterhalb deines Textes hängt die Mail automatisch einen festen Block mit Verkäuferangaben,
+                Zahlungsstatus, dem vollständigen AGB- und Widerrufsbelehrungstext (aus
+                <a th:href="@{/admin/settings}">Einstellungen</a>) und dem Muster-Widerrufsformular an - das
+                musst du hier nicht selbst eintippen.
+            </p>
             <label>Betreff<input type="text" th:field="*{subject}" required="required"/></label>
 
             <label>Inhalt</label>
@@ -105,13 +111,16 @@
         // below. This instant, no-round-trip preview just stands a placeholder box in for it.
         var sampleItemsTable = '<div style="border:1px dashed #999999;border-radius:8px;padding:10px 14px;'
             + 'color:#666666;font-size:13px;margin:0 0 1.25em;">[Bestellübersicht: Artikel, Menge, Preise, Gesamtsumme]</div>';
+        var sampleLegalFooter = '<div style="border:1px dashed #999999;border-radius:8px;padding:10px 14px;'
+            + 'color:#666666;font-size:13px;margin-top:1.5em;">[Verkäuferangaben, Zahlungsstatus, AGB, Widerrufsbelehrung, '
+            + 'Muster-Widerrufsformular - wird automatisch angehängt]</div>';
 
         function updateLivePreview() {
             var doc = livePreviewFrame.contentDocument;
             if (!doc) return;
             var content = editor.innerHTML
                 .replace(/\{\{bestellnummer\}\}/g, '1001')
-                .replace(/\{\{bestellungen\}\}/g, sampleItemsTable);
+                .replace(/\{\{bestellungen\}\}/g, sampleItemsTable) + sampleLegalFooter;
             doc.open();
             doc.write(previewShellHtml.replace('%%CONTENT%%', content));
             doc.close();

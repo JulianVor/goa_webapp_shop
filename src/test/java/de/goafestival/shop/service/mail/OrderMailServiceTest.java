@@ -169,7 +169,7 @@ class OrderMailServiceTest {
 
     private OrderMailService service(String mailHost) {
         return new OrderMailService(mailSender, templateEngine, brandingClient, shopSettingsService,
-                "bestellung@example.com", "login@example.com", mailHost);
+                "bestellung@example.com", "login@example.com", mailHost, "");
     }
 
     private static MedusaCompleteCartResult.Order order() {

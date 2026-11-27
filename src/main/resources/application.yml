@@ -77,3 +77,8 @@ app:
     # this usually has to match (or be a verified alias of) MAIL_USERNAME. Falls back
     # to MAIL_USERNAME in OrderMailService if left blank.
     from: ${MAIL_FROM:}
+  shop:
+    # Public URL of this storefront itself (no trailing slash) - used only to build an
+    # absolute link to the electronic Widerruf form inside outgoing mails (a relative
+    # link would be meaningless in an email client). Left blank, that link is just omitted.
+    base-url: ${SHOP_BASE_URL:}
